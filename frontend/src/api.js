@@ -178,6 +178,61 @@ export const downloadAdminExcel = async (position = "all") => {
   }
 };
 
+// View Resume (PROTECTED - Requires token)
+export const viewResume = async (filename) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
+
+  // Create URL with token for viewing resume
+  const url = `${API_URL}/uploads/resumes/${filename}?token=${token}`;
+  
+  // Open in new tab
+  window.open(url, '_blank');
+};
+
+// Download Resume (PROTECTED - Requires token)
+export const downloadResume = async (filename) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/admin/download-resume/${filename}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        logout();
+        throw new Error("Session expired. Please login again.");
+      }
+      throw new Error("Failed to download resume");
+    }
+
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(downloadUrl);
+    document.body.removeChild(a);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Resume download error:", error);
+    throw error;
+  }
+};
+
 // Check backend health (PUBLIC)
 export const checkHealth = async () => {
   const response = await fetch(`${API_URL}/health`);

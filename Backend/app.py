@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from pymongo import MongoClient, DESCENDING
 from bson import ObjectId
@@ -44,6 +44,8 @@ jobs_collection = db['jobs']
 # File Upload Configuration
 UPLOAD_FOLDER = "uploads/resumes"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+app.config['SECRET_KEY'] = SECRET_KEY
 
 # JWT Token decorator
 def token_required(f):
@@ -422,6 +424,65 @@ def admin_download_excel():
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+# ============ RESUME SERVING ROUTES ============
+
+@app.route('/uploads/resumes/<filename>')
+def serve_resume(filename):
+    """Serve resume files (Protected route - requires authentication)"""
+    try:
+        # Get token from query params or Authorization header
+        token = request.args.get('token') or request.headers.get('Authorization', '').replace('Bearer ', '')
+        
+        if not token:
+            return jsonify({'error': 'Authentication required'}), 401
+        
+        # Verify the token
+        try:
+            jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
+        
+        # Security check: prevent directory traversal
+        if '..' in filename or '/' in filename or '\\' in filename:
+            return jsonify({'error': 'Invalid filename'}), 400
+        
+        # Check if file exists
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'Resume not found'}), 404
+        
+        # Send the file
+        return send_from_directory(UPLOAD_FOLDER, filename)
+        
+    except Exception as e:
+        print(f"Error serving resume: {str(e)}")
+        return jsonify({'error': 'Failed to serve resume'}), 500
+
+@app.route('/admin/download-resume/<filename>')
+@token_required
+def download_resume(filename):
+    """Download resume file (Protected route)"""
+    try:
+        # Security check: prevent directory traversal
+        if '..' in filename or '/' in filename or '\\' in filename:
+            return jsonify({'error': 'Invalid filename'}), 400
+        
+        # Check if file exists
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'Resume not found'}), 404
+        
+        # Send file as attachment
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=filename
+        )
+        
+    except Exception as e:
+        print(f"Error downloading resume: {str(e)}")
+        return jsonify({'error': 'Failed to download resume'}), 500
+
 # ============ PROTECTED ADMIN ROUTES - JOBS ============
 
 @app.route("/admin/jobs", methods=["GET"])
@@ -598,6 +659,7 @@ if __name__ == "__main__":
         print(f"[DB] Database: job_portal")
         print(f"[DB] Collections: applications, jobs")
         print(f"[ADMIN] Admin Username: {ADMIN_USERNAME}")
+        print(f"[UPLOADS] Resume folder: {UPLOAD_FOLDER}")
         
         create_indexes()
         

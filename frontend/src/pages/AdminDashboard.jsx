@@ -13,6 +13,8 @@ import {
   updateApplicationStatus,
   deleteApplication,
   downloadAdminExcel,
+  viewResume,
+  downloadResume,
   getJobs,
   createJob,
   updateJob,
@@ -459,7 +461,7 @@ function JobFormModal({ job, onClose }) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Eligibility</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">Benefits</label>
                 {formData.benefits.map((benefit, idx) => (
                   <div key={idx} className="flex gap-2 mb-3">
                     <input
@@ -1008,13 +1010,51 @@ function ApplicationsTab() {
                   <FileText className="w-5 h-5 text-blue-600" />
                   Resume
                 </h3>
-                <div className="p-4 bg-blue-50 rounded-xl flex items-center gap-3">
-                  <FileText className="w-8 h-8 text-blue-600" />
-                  <div>
-                    <p className="text-gray-900 font-medium">{selectedApp["Resume File"]}</p>
-                    <p className="text-sm text-gray-600">Uploaded on {selectedApp["Applied Date"]}</p>
-                  </div>
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      try {
+                        viewResume(selectedApp["Resume File"]);
+                      } catch (error) {
+                        console.error("Error viewing resume:", error);
+                        alert("Failed to open resume. Please try again.");
+                      }
+                    }}
+                    className="w-full p-4 bg-blue-50 hover:bg-blue-100 rounded-xl flex items-center justify-between gap-3 transition-all group cursor-pointer border-2 border-transparent hover:border-blue-300"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-gray-900 font-semibold group-hover:text-blue-600 transition-colors">
+                          {selectedApp["Resume File"]}
+                        </p>
+                        <p className="text-sm text-gray-600">Uploaded on {selectedApp["Applied Date"]}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Eye className="w-5 h-5 text-blue-600" />
+                      <span className="text-sm font-semibold text-blue-600">View</span>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      try {
+                        downloadResume(selectedApp["Resume File"]);
+                      } catch (error) {
+                        console.error("Error downloading resume:", error);
+                        alert("Failed to download resume. Please try again.");
+                      }
+                    }}
+                    className="w-full px-4 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 text-green-700 rounded-lg font-medium transition-all flex items-center justify-center gap-2 border border-green-200 hover:border-green-300"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Resume
+                  </button>
                 </div>
+                <p className="text-xs text-gray-500 mt-3 text-center">Click to view or download the resume</p>
               </div>
 
               {/* Status Update */}
