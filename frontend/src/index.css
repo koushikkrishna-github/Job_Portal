@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ============================================
-   DESIGN SYSTEM - CSS CUSTOM PROPERTIES
+   DESIGN SYSTEM - CSS CUSTOM PROPERTIES.
    ============================================ */
 
 :root {
@@ -730,5 +730,10 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
 /* Fix icon overlap in inputs */
-input.pl-12, select.pl-12, .input.pl-12 { padding-left: 3rem !important; }
+input.pl-12,
+select.pl-12,
+.input.pl-12 {
+  padding-left: 3rem !important;
+}
