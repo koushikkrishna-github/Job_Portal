@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file, send_from_directory
+from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 from pymongo import MongoClient, DESCENDING
 from bson import ObjectId
@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from urllib.parse import quote_plus
 import jwt
 from functools import wraps
+import gridfs  # GridFS for storing files in MongoDB
 
 # Load environment variables
 load_dotenv()
@@ -41,9 +42,8 @@ db = client['job_portal']
 applications_collection = db['applications']
 jobs_collection = db['jobs']
 
-# File Upload Configuration
-UPLOAD_FOLDER = "uploads/resumes"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# GridFS for storing resume files
+fs = gridfs.GridFS(db)
 
 app.config['SECRET_KEY'] = SECRET_KEY
 
@@ -89,12 +89,16 @@ def health():
         client.server_info()
         app_count = applications_collection.count_documents({})
         job_count = jobs_collection.count_documents({})
+        resume_count = db.fs.files.count_documents({})
+        
         return jsonify({
             "status": "ok",
             "message": "Backend is running",
             "database": "connected",
+            "storage": "GridFS (MongoDB)",
             "applications_count": app_count,
-            "jobs_count": job_count
+            "jobs_count": job_count,
+            "resumes_stored": resume_count
         }), 200
     except Exception as e:
         return jsonify({
@@ -112,11 +116,32 @@ def apply_job():
         if not resume:
             return jsonify({"error": "Resume file is required"}), 400
 
-        # Save resume file
+        # Validate file type
+        allowed_extensions = {'pdf', 'doc', 'docx'}
+        file_ext = resume.filename.rsplit('.', 1)[1].lower() if '.' in resume.filename else ''
+        if file_ext not in allowed_extensions:
+            return jsonify({"error": "Only PDF, DOC, and DOCX files are allowed"}), 400
+
+        # Read file content
+        resume_content = resume.read()
+        
+        # Create filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{timestamp}_{resume.filename}"
-        resume_path = os.path.join(UPLOAD_FOLDER, filename)
-        resume.save(resume_path)
+        original_filename = resume.filename
+        stored_filename = f"{timestamp}_{original_filename}"
+
+        # Store file in GridFS
+        file_id = fs.put(
+            resume_content,
+            filename=stored_filename,
+            content_type=resume.content_type,
+            upload_date=datetime.now(),
+            metadata={
+                'original_filename': original_filename,
+                'applicant_email': form.get('email'),
+                'file_size': len(resume_content)
+            }
+        )
 
         # Get next ID (sequential)
         last_app = applications_collection.find_one(sort=[("ID", DESCENDING)])
@@ -133,8 +158,10 @@ def apply_job():
             "Degree": form.get("degree"),
             "Passout Year": form.get("year"),
             "Skills": form.get("skills"),
-            "Resume File": filename,
-            "Resume Path": resume_path,
+            "Resume File": stored_filename,
+            "Resume File ID": str(file_id),  # GridFS file ID
+            "Resume Original Name": original_filename,
+            "Resume Size": len(resume_content),
             "Applied Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "Status": "Pending",
             "Created At": datetime.now()
@@ -143,13 +170,16 @@ def apply_job():
         # Insert into MongoDB
         result = applications_collection.insert_one(application)
         
+        print(f"[SUCCESS] Application submitted - ID: {next_id}, Resume stored in GridFS: {file_id}")
+        
         return jsonify({
             "message": "Application submitted successfully",
-            "id": str(result.inserted_id)
+            "id": str(result.inserted_id),
+            "application_id": next_id
         }), 201
     
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"[ERROR] Application submission failed: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 # ============ JOB ROUTES (PUBLIC) ============
@@ -333,13 +363,16 @@ def delete_application(app_id):
         if not application:
             return jsonify({"error": "Application not found"}), 404
         
-        resume_path = application.get('Resume Path')
-        if resume_path and os.path.exists(resume_path):
+        # Delete resume from GridFS
+        resume_file_id = application.get('Resume File ID')
+        if resume_file_id:
             try:
-                os.remove(resume_path)
+                fs.delete(ObjectId(resume_file_id))
+                print(f"[SUCCESS] Deleted resume from GridFS: {resume_file_id}")
             except Exception as e:
-                print(f"Warning: Could not delete resume file: {e}")
+                print(f"[WARNING] Could not delete resume from GridFS: {e}")
         
+        # Delete application document
         applications_collection.delete_one({"ID": app_id})
         
         return jsonify({"message": "Application deleted successfully"}), 200
@@ -424,11 +457,11 @@ def admin_download_excel():
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-# ============ RESUME SERVING ROUTES ============
+# ============ RESUME SERVING ROUTES (GridFS) ============
 
 @app.route('/uploads/resumes/<filename>')
 def serve_resume(filename):
-    """Serve resume files (Protected route - requires authentication)"""
+    """Serve resume files from GridFS (Protected route)"""
     try:
         # Get token from query params or Authorization header
         token = request.args.get('token') or request.headers.get('Authorization', '').replace('Bearer ', '')
@@ -446,13 +479,23 @@ def serve_resume(filename):
         if '..' in filename or '/' in filename or '\\' in filename:
             return jsonify({'error': 'Invalid filename'}), 400
         
-        # Check if file exists
-        file_path = os.path.join(UPLOAD_FOLDER, filename)
-        if not os.path.exists(file_path):
+        # Find file in GridFS by filename
+        grid_file = fs.find_one({"filename": filename})
+        
+        if not grid_file:
             return jsonify({'error': 'Resume not found'}), 404
         
-        # Send the file
-        return send_from_directory(UPLOAD_FOLDER, filename)
+        # Read file content
+        file_data = grid_file.read()
+        
+        # Return file with appropriate content type
+        return Response(
+            file_data,
+            mimetype=grid_file.content_type or 'application/pdf',
+            headers={
+                'Content-Disposition': f'inline; filename="{grid_file.filename}"'
+            }
+        )
         
     except Exception as e:
         print(f"Error serving resume: {str(e)}")
@@ -461,27 +504,76 @@ def serve_resume(filename):
 @app.route('/admin/download-resume/<filename>')
 @token_required
 def download_resume(filename):
-    """Download resume file (Protected route)"""
+    """Download resume file from GridFS (Protected route)"""
     try:
         # Security check: prevent directory traversal
         if '..' in filename or '/' in filename or '\\' in filename:
             return jsonify({'error': 'Invalid filename'}), 400
         
-        # Check if file exists
-        file_path = os.path.join(UPLOAD_FOLDER, filename)
-        if not os.path.exists(file_path):
+        # Find file in GridFS by filename
+        grid_file = fs.find_one({"filename": filename})
+        
+        if not grid_file:
             return jsonify({'error': 'Resume not found'}), 404
         
-        # Send file as attachment
+        # Read file content
+        file_data = grid_file.read()
+        
+        # Create BytesIO object
+        file_stream = BytesIO(file_data)
+        
+        # Get original filename from metadata if available
+        original_filename = grid_file.metadata.get('original_filename', filename) if grid_file.metadata else filename
+        
+        # Return file as attachment
         return send_file(
-            file_path,
+            file_stream,
+            mimetype=grid_file.content_type or 'application/pdf',
             as_attachment=True,
-            download_name=filename
+            download_name=original_filename
         )
         
     except Exception as e:
         print(f"Error downloading resume: {str(e)}")
         return jsonify({'error': 'Failed to download resume'}), 500
+
+@app.route('/admin/view-resume/<int:app_id>')
+@token_required
+def view_resume_by_app_id(app_id):
+    """View resume by application ID"""
+    try:
+        # Find application
+        application = applications_collection.find_one({"ID": app_id})
+        
+        if not application:
+            return jsonify({'error': 'Application not found'}), 404
+        
+        resume_file_id = application.get('Resume File ID')
+        
+        if not resume_file_id:
+            return jsonify({'error': 'No resume found for this application'}), 404
+        
+        # Get file from GridFS
+        try:
+            grid_file = fs.get(ObjectId(resume_file_id))
+        except:
+            return jsonify({'error': 'Resume file not found in storage'}), 404
+        
+        # Read file content
+        file_data = grid_file.read()
+        
+        # Return file
+        return Response(
+            file_data,
+            mimetype=grid_file.content_type or 'application/pdf',
+            headers={
+                'Content-Disposition': f'inline; filename="{grid_file.filename}"'
+            }
+        )
+        
+    except Exception as e:
+        print(f"Error viewing resume: {str(e)}")
+        return jsonify({'error': 'Failed to view resume'}), 500
 
 # ============ PROTECTED ADMIN ROUTES - JOBS ============
 
@@ -645,11 +737,79 @@ def create_indexes():
     except Exception as e:
         print(f"[WARNING] Could not create indexes: {e}")
 
+# ============ MIGRATION HELPER (Optional) ============
+
+@app.route("/admin/migrate-local-to-gridfs", methods=["POST"])
+@token_required
+def migrate_local_to_gridfs():
+    """
+    One-time migration endpoint to move existing local files to GridFS
+    Call this once after deployment to migrate old resumes
+    """
+    try:
+        migrated = 0
+        failed = 0
+        
+        # Find all applications with local file paths
+        applications = applications_collection.find({"Resume Path": {"$exists": True}})
+        
+        for app in applications:
+            try:
+                resume_path = app.get('Resume Path')
+                
+                # Check if file exists locally
+                if resume_path and os.path.exists(resume_path):
+                    # Read file
+                    with open(resume_path, 'rb') as f:
+                        file_content = f.read()
+                    
+                    # Store in GridFS
+                    file_id = fs.put(
+                        file_content,
+                        filename=app.get('Resume File'),
+                        content_type='application/pdf',
+                        upload_date=app.get('Created At', datetime.now()),
+                        metadata={
+                            'original_filename': app.get('Resume File'),
+                            'applicant_email': app.get('Email'),
+                            'migrated': True
+                        }
+                    )
+                    
+                    # Update application document
+                    applications_collection.update_one(
+                        {"_id": app['_id']},
+                        {
+                            "$set": {
+                                "Resume File ID": str(file_id),
+                                "Migrated to GridFS": True
+                            },
+                            "$unset": {"Resume Path": ""}
+                        }
+                    )
+                    
+                    migrated += 1
+                    print(f"[MIGRATED] {app.get('Resume File')} -> GridFS")
+                
+            except Exception as e:
+                failed += 1
+                print(f"[FAILED] Migration error for app {app.get('ID')}: {e}")
+        
+        return jsonify({
+            "message": "Migration completed",
+            "migrated": migrated,
+            "failed": failed
+        }), 200
+        
+    except Exception as e:
+        print(f"Error during migration: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 # ============ MAIN ============
 
 if __name__ == "__main__":
     print("\n" + "="*60)
-    print("   JOB PORTAL BACKEND - MONGODB VERSION")
+    print("   JOB PORTAL BACKEND - MONGODB GRIDFS VERSION")
     print("="*60)
     print(f"\n[*] Connecting to MongoDB...")
     
@@ -658,8 +818,12 @@ if __name__ == "__main__":
         print("[OK] MongoDB connection successful!")
         print(f"[DB] Database: job_portal")
         print(f"[DB] Collections: applications, jobs")
+        print(f"[STORAGE] Using GridFS for resume files")
         print(f"[ADMIN] Admin Username: {ADMIN_USERNAME}")
-        print(f"[UPLOADS] Resume folder: {UPLOAD_FOLDER}")
+        
+        # Check existing resumes in GridFS
+        resume_count = db.fs.files.count_documents({})
+        print(f"[GRIDFS] Resumes stored: {resume_count}")
         
         create_indexes()
         

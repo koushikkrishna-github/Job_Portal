@@ -9,7 +9,7 @@ export default function About() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
                     <h1 className="text-4xl md:text-5xl font-bold mb-6">About Our Company</h1>
                     <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-                        We are on a mission to revolutionize recruitment by connecting exceptional talent with world-changing organizations through technology and human insight.
+                        We are on a mission to revolutionize recruitment, by connecting exceptional talent with world-changing organizations through technology and human insight.
                     </p>
                 </div>
             </section>
