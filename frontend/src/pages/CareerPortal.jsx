@@ -171,7 +171,7 @@ function JobDetails({ job, onBack, onApplyNow }) {
         {/* Benefits */}
         {job.benefits && job.benefits.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-3">Eligibility</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">Benifits</h2>
             <div className="grid md:grid-cols-2 gap-3">
               {job.benefits.map((benefit, idx) => (
                 <div key={idx} className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
