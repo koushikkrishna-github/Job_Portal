@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from pymongo import MongoClient, DESCENDING
 from bson import ObjectId
@@ -39,10 +39,13 @@ MONGO_URI = f"mongodb+srv://{username}:{password}@{MONGO_CLUSTER}/job_portal?ret
 client = MongoClient(MONGO_URI)
 db = client['job_portal']
 applications_collection = db['applications']
+jobs_collection = db['jobs']
 
 # File Upload Configuration
 UPLOAD_FOLDER = "uploads/resumes"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+app.config['SECRET_KEY'] = SECRET_KEY
 
 # JWT Token decorator
 def token_required(f):
@@ -74,10 +77,31 @@ def serialize_doc(doc):
     if doc is None:
         return None
     doc['_id'] = str(doc['_id'])
-    doc['ID'] = doc.get('ID', doc['_id'])
+    if 'ID' not in doc and 'id' not in doc:
+        doc['id'] = str(doc['_id'])
     return doc
 
 # ============ PUBLIC ROUTES (No Authentication) ============
+
+@app.route("/health", methods=["GET"])
+def health():
+    try:
+        client.server_info()
+        app_count = applications_collection.count_documents({})
+        job_count = jobs_collection.count_documents({})
+        return jsonify({
+            "status": "ok",
+            "message": "Backend is running",
+            "database": "connected",
+            "applications_count": app_count,
+            "jobs_count": job_count
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": "Database connection failed",
+            "error": str(e)
+        }), 500
 
 @app.route("/apply", methods=["POST"])
 def apply_job():
@@ -128,23 +152,48 @@ def apply_job():
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/health", methods=["GET"])
-def health():
+# ============ JOB ROUTES (PUBLIC) ============
+
+@app.route("/jobs", methods=["GET"])
+def get_jobs():
+    """Public route - Get all active jobs for career portal"""
     try:
-        client.server_info()
-        app_count = applications_collection.count_documents({})
-        return jsonify({
-            "status": "ok",
-            "message": "Backend is running",
-            "database": "connected",
-            "applications_count": app_count
-        }), 200
+        query = {"status": "Active"}
+        
+        # Optional filters
+        job_type = request.args.get('type')
+        experience = request.args.get('experience')
+        
+        if job_type and job_type != 'all':
+            query['type'] = job_type
+        
+        if experience and experience != 'all':
+            query['experience'] = experience
+        
+        jobs = list(jobs_collection.find(query).sort("created_at", DESCENDING))
+        jobs = [serialize_doc(job) for job in jobs]
+        
+        return jsonify(jobs), 200
+        
     except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": "Database connection failed",
-            "error": str(e)
-        }), 500
+        print(f"Error fetching jobs: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/jobs/<int:job_id>", methods=["GET"])
+def get_job_by_id(job_id):
+    """Public route - Get single job details"""
+    try:
+        job = jobs_collection.find_one({"id": job_id, "status": "Active"})
+        
+        if not job:
+            return jsonify({"error": "Job not found"}), 404
+        
+        job = serialize_doc(job)
+        return jsonify(job), 200
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 # ============ ADMIN LOGIN ROUTE ============
 
@@ -178,7 +227,7 @@ def admin_login():
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-# ============ PROTECTED ADMIN ROUTES (Require Authentication) ============
+# ============ PROTECTED ADMIN ROUTES - APPLICATIONS ============
 
 @app.route("/admin/applications", methods=["GET"])
 @token_required
@@ -375,17 +424,228 @@ def admin_download_excel():
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+# ============ RESUME SERVING ROUTES ============
+
+@app.route('/uploads/resumes/<filename>')
+def serve_resume(filename):
+    """Serve resume files (Protected route - requires authentication)"""
+    try:
+        # Get token from query params or Authorization header
+        token = request.args.get('token') or request.headers.get('Authorization', '').replace('Bearer ', '')
+        
+        if not token:
+            return jsonify({'error': 'Authentication required'}), 401
+        
+        # Verify the token
+        try:
+            jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
+        
+        # Security check: prevent directory traversal
+        if '..' in filename or '/' in filename or '\\' in filename:
+            return jsonify({'error': 'Invalid filename'}), 400
+        
+        # Check if file exists
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'Resume not found'}), 404
+        
+        # Send the file
+        return send_from_directory(UPLOAD_FOLDER, filename)
+        
+    except Exception as e:
+        print(f"Error serving resume: {str(e)}")
+        return jsonify({'error': 'Failed to serve resume'}), 500
+
+@app.route('/admin/download-resume/<filename>')
+@token_required
+def download_resume(filename):
+    """Download resume file (Protected route)"""
+    try:
+        # Security check: prevent directory traversal
+        if '..' in filename or '/' in filename or '\\' in filename:
+            return jsonify({'error': 'Invalid filename'}), 400
+        
+        # Check if file exists
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'Resume not found'}), 404
+        
+        # Send file as attachment
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=filename
+        )
+        
+    except Exception as e:
+        print(f"Error downloading resume: {str(e)}")
+        return jsonify({'error': 'Failed to download resume'}), 500
+
+# ============ PROTECTED ADMIN ROUTES - JOBS ============
+
+@app.route("/admin/jobs", methods=["GET"])
+@token_required
+def admin_get_jobs():
+    """Admin route - Get all jobs (including inactive)"""
+    try:
+        jobs = list(jobs_collection.find().sort("created_at", DESCENDING))
+        jobs = [serialize_doc(job) for job in jobs]
+        return jsonify(jobs), 200
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/admin/jobs", methods=["POST"])
+@token_required
+def create_job():
+    """Create a new job posting"""
+    try:
+        data = request.json
+        
+        # Validate required fields
+        required_fields = ['title', 'company', 'location', 'type', 'experience', 'salary', 'description']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({"error": f"{field} is required"}), 400
+        
+        # Get next ID
+        last_job = jobs_collection.find_one(sort=[("id", DESCENDING)])
+        next_id = (last_job['id'] + 1) if last_job and 'id' in last_job else 1
+        
+        # Create job document
+        job = {
+            "id": next_id,
+            "title": data.get("title"),
+            "company": data.get("company"),
+            "location": data.get("location"),
+            "type": data.get("type"),
+            "experience": data.get("experience"),
+            "salary": data.get("salary"),
+            "postedDate": "Just now",
+            "applicants": 0,
+            "description": data.get("description"),
+            "responsibilities": data.get("responsibilities", []),
+            "requirements": data.get("requirements", []),
+            "skills": data.get("skills", []),
+            "benefits": data.get("benefits", []),
+            "status": data.get("status", "Active"),
+            "created_at": datetime.now(),
+            "updated_at": datetime.now()
+        }
+        
+        result = jobs_collection.insert_one(job)
+        
+        return jsonify({
+            "message": "Job created successfully",
+            "id": str(result.inserted_id),
+            "job_id": next_id
+        }), 201
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/admin/jobs/<int:job_id>", methods=["PUT"])
+@token_required
+def update_job(job_id):
+    """Update an existing job"""
+    try:
+        data = request.json
+        
+        update_data = {
+            "title": data.get("title"),
+            "company": data.get("company"),
+            "location": data.get("location"),
+            "type": data.get("type"),
+            "experience": data.get("experience"),
+            "salary": data.get("salary"),
+            "description": data.get("description"),
+            "responsibilities": data.get("responsibilities", []),
+            "requirements": data.get("requirements", []),
+            "skills": data.get("skills", []),
+            "benefits": data.get("benefits", []),
+            "status": data.get("status", "Active"),
+            "updated_at": datetime.now()
+        }
+        
+        result = jobs_collection.update_one(
+            {"id": job_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            return jsonify({"error": "Job not found"}), 404
+        
+        return jsonify({"message": "Job updated successfully"}), 200
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/admin/jobs/<int:job_id>", methods=["DELETE"])
+@token_required
+def delete_job(job_id):
+    """Delete a job posting"""
+    try:
+        result = jobs_collection.delete_one({"id": job_id})
+        
+        if result.deleted_count == 0:
+            return jsonify({"error": "Job not found"}), 404
+        
+        return jsonify({"message": "Job deleted successfully"}), 200
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/admin/jobs/<int:job_id>/toggle-status", methods=["PUT"])
+@token_required
+def toggle_job_status(job_id):
+    """Toggle job status between Active and Inactive"""
+    try:
+        job = jobs_collection.find_one({"id": job_id})
+        
+        if not job:
+            return jsonify({"error": "Job not found"}), 404
+        
+        new_status = "Inactive" if job.get("status") == "Active" else "Active"
+        
+        jobs_collection.update_one(
+            {"id": job_id},
+            {"$set": {"status": new_status, "updated_at": datetime.now()}}
+        )
+        
+        return jsonify({"message": "Status updated", "new_status": new_status}), 200
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+# ============ HELPER FUNCTIONS ============
+
 def create_indexes():
     """Create MongoDB indexes for optimized queries"""
     try:
+        # Applications indexes
         applications_collection.create_index("ID", unique=True)
         applications_collection.create_index("Email")
         applications_collection.create_index("Position")
         applications_collection.create_index("Status")
         applications_collection.create_index([("Created At", DESCENDING)])
+        
+        # Jobs indexes
+        jobs_collection.create_index("id", unique=True)
+        jobs_collection.create_index("status")
+        jobs_collection.create_index("title")
+        jobs_collection.create_index([("created_at", DESCENDING)])
+        
         print("[OK] MongoDB indexes created successfully")
     except Exception as e:
         print(f"[WARNING] Could not create indexes: {e}")
+
+# ============ MAIN ============
 
 if __name__ == "__main__":
     print("\n" + "="*60)
@@ -397,8 +657,9 @@ if __name__ == "__main__":
         client.server_info()
         print("[OK] MongoDB connection successful!")
         print(f"[DB] Database: job_portal")
-        print(f"[DB] Collection: applications")
+        print(f"[DB] Collections: applications, jobs")
         print(f"[ADMIN] Admin Username: {ADMIN_USERNAME}")
+        print(f"[UPLOADS] Resume folder: {UPLOAD_FOLDER}")
         
         create_indexes()
         

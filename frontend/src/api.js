@@ -178,8 +178,183 @@ export const downloadAdminExcel = async (position = "all") => {
   }
 };
 
+// View Resume (PROTECTED - Requires token)
+export const viewResume = async (filename) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
+
+  // Create URL with token for viewing resume
+  const url = `${API_URL}/uploads/resumes/${filename}?token=${token}`;
+  
+  // Open in new tab
+  window.open(url, '_blank');
+};
+
+// Download Resume (PROTECTED - Requires token)
+export const downloadResume = async (filename) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/admin/download-resume/${filename}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        logout();
+        throw new Error("Session expired. Please login again.");
+      }
+      throw new Error("Failed to download resume");
+    }
+
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(downloadUrl);
+    document.body.removeChild(a);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Resume download error:", error);
+    throw error;
+  }
+};
+
 // Check backend health (PUBLIC)
 export const checkHealth = async () => {
   const response = await fetch(`${API_URL}/health`);
+  return response.json();
+};
+
+// ============================================
+// JOB MANAGEMENT API FUNCTIONS
+// ============================================
+
+// Get all jobs (PUBLIC - anyone can view jobs)
+export const getJobs = async (filters = {}) => {
+  const params = new URLSearchParams();
+
+  if (filters.type) params.append("type", filters.type);
+  if (filters.experience) params.append("experience", filters.experience);
+  if (filters.status) params.append("status", filters.status);
+
+  const response = await fetch(`${API_URL}/jobs?${params}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch jobs");
+  }
+
+  return response.json();
+};
+
+// Get single job by ID (PUBLIC)
+export const getJobById = async (jobId) => {
+  const response = await fetch(`${API_URL}/jobs/${jobId}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch job details");
+  }
+
+  return response.json();
+};
+
+// Create new job (PROTECTED - Requires token)
+export const createJob = async (jobData) => {
+  const response = await fetch(`${API_URL}/admin/jobs`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(jobData),
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      logout();
+      throw new Error("Session expired. Please login again.");
+    }
+    const error = await response.json();
+    throw new Error(error.error || "Failed to create job");
+  }
+
+  return response.json();
+};
+
+// Update job (PROTECTED - Requires token)
+export const updateJob = async (jobId, jobData) => {
+  const response = await fetch(`${API_URL}/admin/jobs/${jobId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(jobData),
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      logout();
+      throw new Error("Session expired. Please login again.");
+    }
+    const error = await response.json();
+    throw new Error(error.error || "Failed to update job");
+  }
+
+  return response.json();
+};
+
+// Delete job (PROTECTED - Requires token)
+export const deleteJob = async (jobId) => {
+  const response = await fetch(`${API_URL}/admin/jobs/${jobId}`, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${getToken()}`,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      logout();
+      throw new Error("Session expired. Please login again.");
+    }
+    const error = await response.json();
+    throw new Error(error.error || "Failed to delete job");
+  }
+
+  return response.json();
+};
+
+// Toggle job status (Active/Inactive) (PROTECTED - Requires token)
+export const toggleJobStatus = async (jobId) => {
+  const response = await fetch(`${API_URL}/admin/jobs/${jobId}/toggle-status`, {
+    method: "PATCH",
+    headers: {
+      "Authorization": `Bearer ${getToken()}`,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      logout();
+      throw new Error("Session expired. Please login again.");
+    }
+    const error = await response.json();
+    throw new Error(error.error || "Failed to toggle job status");
+  }
+
   return response.json();
 };
