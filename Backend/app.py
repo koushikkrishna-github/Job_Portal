@@ -551,7 +551,7 @@ def view_resume_by_app_id(app_id):
         resume_file_id = application.get('Resume File ID')
         
         if not resume_file_id:
-            return jsonify({'error': 'No resume found for this application'}), 404
+            return jsonify({'error': 'No resume found for this user application '}), 404
         
         # Get file from GridFS
         try:
