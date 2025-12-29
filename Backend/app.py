@@ -546,7 +546,7 @@ def view_resume_by_app_id(app_id):
         application = applications_collection.find_one({"ID": app_id})
         
         if not application:
-            return jsonify({'error': 'Application not found'}), 404
+            return jsonify({'error': 'Application not found in database'}), 404
         
         resume_file_id = application.get('Resume File ID')
         
