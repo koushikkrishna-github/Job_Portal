@@ -41,6 +41,7 @@ client = MongoClient(MONGO_URI)
 db = client['job_portal']
 applications_collection = db['applications']
 jobs_collection = db['jobs']
+interviews_collection = db['interviews']
 
 # GridFS for storing resume files
 fs = gridfs.GridFS(db)
@@ -306,6 +307,7 @@ def get_statistics():
             "Pending": by_status_result.get("Pending", 0),
             "Reviewed": by_status_result.get("Reviewed", 0),
             "Shortlisted": by_status_result.get("Shortlisted", 0),
+            "Placed": by_status_result.get("Placed", 0),
             "Rejected": by_status_result.get("Rejected", 0)
         }
         
@@ -314,8 +316,17 @@ def get_statistics():
                      .limit(5))
         recent = [serialize_doc(app) for app in recent]
         
+        jobs_count = jobs_collection.count_documents({"status": "Active"})
+        
+        interviews_count = interviews_collection.count_documents({})
+        interviews_scheduled = interviews_collection.count_documents({"status": "Scheduled"})
+        interviews_completed = interviews_collection.count_documents({"status": "Completed"})
+
         stats = {
             "total": total,
+            "jobs_active": jobs_count,
+            "interviews_total": interviews_count,
+            "interviews_scheduled": interviews_scheduled,
             "by_position": by_position,
             "by_status": by_status,
             "recent_applications": recent
@@ -574,6 +585,78 @@ def view_resume_by_app_id(app_id):
     except Exception as e:
         print(f"Error viewing resume: {str(e)}")
         return jsonify({'error': 'Failed to view resume'}), 500
+
+# ============ PROTECTED ADMIN ROUTES - INTERVIEWS ============
+
+@app.route("/admin/interviews", methods=["POST"])
+@token_required
+def schedule_interview():
+    """Schedule a new interview"""
+    try:
+        data = request.json
+        
+        # Validate
+        required = ['application_id', 'candidate_email', 'date_time', 'type', 'link']
+        for field in required:
+            if not data.get(field):
+                return jsonify({"error": f"{field} is required"}), 400
+        
+        # Get next ID
+        last = interviews_collection.find_one(sort=[("id", DESCENDING)])
+        next_id = (last['id'] + 1) if last and 'id' in last else 1
+        
+        interview = {
+            "id": next_id,
+            "application_id": data.get("application_id"),
+            "candidate_name": data.get("candidate_name", "Candidate"),
+            "candidate_email": data.get("candidate_email"),
+            "interviewer": data.get("interviewer", "Hiring Manager"),
+            "date_time": data.get("date_time"), # ISO String expected
+            "type": data.get("type"), # Technical, HR, etc.
+            "link": data.get("link"),
+            "status": "Scheduled",
+            "created_at": datetime.now()
+        }
+        
+        interviews_collection.insert_one(interview)
+        
+        # Simulate Email Sending
+        print(f"[EMAIL MOCK] To: {data.get('candidate_email')}")
+        print(f"Subject: Interview Invitation - {data.get('type')} Round")
+        print(f"Body: Dear Candidate, your interview is scheduled at {data.get('date_time')}. Link: {data.get('link')}")
+        
+        return jsonify({"message": "Interview scheduled successfully", "id": next_id}), 201
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/admin/interviews", methods=["GET"])
+@token_required
+def get_interviews():
+    """Get all interviews"""
+    try:
+        interviews = list(interviews_collection.find().sort("date_time", 1))
+        interviews = [serialize_doc(i) for i in interviews]
+        return jsonify(interviews), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/admin/interviews/<int:interview_id>", methods=["PUT"])
+@token_required
+def update_interview_status(interview_id):
+    """Update interview status (Completed/Cancelled)"""
+    try:
+        data = request.json
+        status = data.get("status")
+        
+        interviews_collection.update_one(
+            {"id": interview_id},
+            {"$set": {"status": status}}
+        )
+        return jsonify({"message": "Status updated"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # ============ PROTECTED ADMIN ROUTES - JOBS ============
 

@@ -188,7 +188,7 @@ export const viewResume = async (filename) => {
 
   // Create URL with token for viewing resume
   const url = `${API_URL}/uploads/resumes/${filename}?token=${token}`;
-  
+
   // Open in new tab
   window.open(url, '_blank');
 };
@@ -238,6 +238,48 @@ export const checkHealth = async () => {
   const response = await fetch(`${API_URL}/health`);
   return response.json();
 };
+
+
+
+// ============ INTERVIEWS API ============
+
+export const scheduleInterview = async (interviewData) => {
+  const response = await fetch(`${API_URL}/admin/interviews`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(interviewData),
+  });
+  if (!response.ok) throw new Error("Failed to schedule interview");
+  return response.json();
+};
+
+export const getInterviews = async () => {
+  const response = await fetch(`${API_URL}/admin/interviews`, {
+    headers: {
+      "Authorization": `Bearer ${getToken()}`,
+    },
+  });
+  if (!response.ok) throw new Error("Failed to get interviews");
+  return response.json();
+};
+
+export const updateInterviewStatus = async (id, status) => {
+  const response = await fetch(`${API_URL}/admin/interviews/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) throw new Error("Failed to update interview");
+  return response.json();
+};
+
+
 
 // ============================================
 // JOB MANAGEMENT API FUNCTIONS

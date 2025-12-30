@@ -46,20 +46,30 @@ export default function Home() {
                                 </Link>
                             </div>
 
-                            <div className="pt-8 flex items-center gap-8 border-t border-gray-100">
+                            <div className="pt-8 grid grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-4 border-t border-gray-100">
+                                <div>
+                                    <p className="text-3xl font-bold text-gray-900">20+</p>
+                                    <p className="text-sm text-gray-500">States in India</p>
+                                </div>
                                 <div>
                                     <p className="text-3xl font-bold text-gray-900">500+</p>
                                     <p className="text-sm text-gray-500">Partner Companies</p>
                                 </div>
-                                <div className="w-px h-10 bg-gray-200" />
                                 <div>
-                                    <p className="text-3xl font-bold text-gray-900">10k+</p>
-                                    <p className="text-sm text-gray-500">Careers Launched</p>
+                                    <p className="text-3xl font-bold text-gray-900">25k+</p>
+                                    <p className="text-sm text-gray-500">Apps Received</p>
                                 </div>
-                                <div className="w-px h-10 bg-gray-200" />
                                 <div>
-                                    <p className="text-3xl font-bold text-gray-900">98%</p>
-                                    <p className="text-sm text-gray-500">Success Rate</p>
+                                    <p className="text-3xl font-bold text-gray-900">20k+</p>
+                                    <p className="text-sm text-gray-500">Apps Processed</p>
+                                </div>
+                                <div>
+                                    <p className="text-3xl font-bold text-gray-900">3k+</p>
+                                    <p className="text-sm text-gray-500">Shortlisted</p>
+                                </div>
+                                <div>
+                                    <p className="text-3xl font-bold text-gray-900">1.8k+</p>
+                                    <p className="text-sm text-gray-500">Succesfully Placed</p>
                                 </div>
                             </div>
                         </div>

@@ -37,14 +37,30 @@ export default function About() {
                                 Our technology-driven approach, combined with deep industry expertise, allows us to make matches that last. We are more than just a job board; we are career partners for candidates and growth partners for businesses.
                             </p>
 
-                            <div className="grid grid-cols-2 gap-6 pt-6">
-                                <div className="p-4 bg-gray-50 rounded-xl">
-                                    <p className="text-3xl font-bold text-blue-600 mb-1">50+</p>
-                                    <p className="text-gray-600">Countries Served</p>
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 pt-6">
+                                <div className="p-3 bg-gray-50 rounded-xl">
+                                    <p className="text-2xl font-bold text-blue-600 mb-1">20+</p>
+                                    <p className="text-xs text-gray-600">States in India</p>
                                 </div>
-                                <div className="p-4 bg-gray-50 rounded-xl">
-                                    <p className="text-3xl font-bold text-blue-600 mb-1">200M+</p>
-                                    <p className="text-gray-600">Applications Processed</p>
+                                <div className="p-3 bg-gray-50 rounded-xl">
+                                    <p className="text-2xl font-bold text-blue-600 mb-1">500+</p>
+                                    <p className="text-xs text-gray-600">Companies</p>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded-xl">
+                                    <p className="text-2xl font-bold text-blue-600 mb-1">25k+</p>
+                                    <p className="text-xs text-gray-600">Received</p>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded-xl">
+                                    <p className="text-2xl font-bold text-blue-600 mb-1">20k+</p>
+                                    <p className="text-xs text-gray-600">Processed</p>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded-xl">
+                                    <p className="text-2xl font-bold text-blue-600 mb-1">3k+</p>
+                                    <p className="text-xs text-gray-600">Shortlisted</p>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded-xl">
+                                    <p className="text-2xl font-bold text-blue-600 mb-1">1.8k+</p>
+                                    <p className="text-xs text-gray-600">Placed</p>
                                 </div>
                             </div>
                         </div>

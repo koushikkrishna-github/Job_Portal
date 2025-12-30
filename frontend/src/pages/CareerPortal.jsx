@@ -458,7 +458,9 @@ export default function CareerPortal() {
   const [view, setView] = useState("listings");
   const [selectedJob, setSelectedJob] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState("all");
+  // State for filters and application form visibility
+  const [filters, setFilters] = useState({ type: "All Types", experience: "All Levels" });
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -469,183 +471,179 @@ export default function CareerPortal() {
   }, []);
 
   const fetchJobs = async () => {
-    setLoading(true);
-    setError(null);
     try {
       const data = await getJobs();
       setJobs(data);
     } catch (err) {
-      console.error("Error fetching jobs:", err);
-      setError("Failed to load jobs. Please try again later.");
+      console.error("Failed to load jobs:", err);
+      setError("Could not load job listings. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
+  // Filter jobs logic
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = 
-      job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.location?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === "all" || job.type === filterType;
-    return matchesSearch && matchesFilter;
+    const matchesSearch =
+      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.location.toLowerCase().includes(searchTerm.toLowerCase()); // Added location search
+
+    const matchesType = filters.type === "All Types" || job.type === filters.type;
+    const matchesExp = filters.experience === "All Levels" || job.experience === filters.experience;
+
+    return matchesSearch && matchesType && matchesExp;
   });
 
-  const handleViewDetails = (job) => {
+  const handleApplyClick = (job) => {
     setSelectedJob(job);
-    setView("details");
+    setShowApplicationForm(true);
   };
 
-  const handleApplyNow = () => {
-    setView("apply");
-  };
-
-  const handleApplicationSuccess = () => {
-    setView("success");
-  };
-
-  const handleBackToListings = () => {
-    setView("listings");
+  const handleApplySuccess = () => {
+    alert("Application Submitted Successfully! We will review your profile.");
+    setShowApplicationForm(false);
     setSelectedJob(null);
   };
 
-  // Loading state
-  if (loading && view === "listings") {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center animate-fadeIn">
-          <RefreshCw className="w-16 h-16 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-lg text-gray-600 font-medium">Loading job openings...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-lg font-medium text-gray-700">Loading Career Opportunities...</p>
         </div>
       </div>
     );
   }
 
-  // Error state
-  if (error && view === "listings") {
+  if (showApplicationForm && selectedJob) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-        <div className="card p-8 max-w-md text-center animate-fadeIn">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <X className="w-8 h-8 text-red-600" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Oops! Something went wrong</h3>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button
-            onClick={fetchJobs}
-            className="btn btn-primary px-6 py-3 inline-flex items-center gap-2"
-          >
-            <RefreshCw className="w-5 h-5" />
-            Try Again
-          </button>
-        </div>
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <ApplicationForm
+          job={selectedJob}
+          onBack={() => setShowApplicationForm(false)}
+          onSuccess={handleApplySuccess}
+        />
+      </div>
+    );
+  }
+
+  if (selectedJob) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <JobDetails
+          job={selectedJob}
+          onBack={() => setSelectedJob(null)}
+          onApplyNow={() => setShowApplicationForm(true)}
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
-      {view === "listings" && (
-        <div className="max-w-7xl mx-auto">
-          {/* Hero Section */}
-          <div className="text-center mb-12 animate-fadeInDown">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">
-              <Sparkles className="w-4 h-4" />
-              Now Hiring
+    <div className="min-h-screen bg-gray-50">
+      {/* Search Header */}
+      <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white py-16 px-4">
+        <div className="max-w-7xl mx-auto text-center space-y-6">
+          <h1 className="text-4xl md:text-5xl font-bold animate-fadeInDown">
+            Find Your Dream Career
+          </h1>
+          <p className="text-xl text-blue-100 max-w-2xl mx-auto animate-fadeInUp">
+            Explore opportunities that match your skills and aspirations.
+          </p>
+
+          <div className="max-w-3xl mx-auto mt-8 relative animate-fadeInUp" style={{ animationDelay: "0.2s" }}>
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <Search className="h-6 w-6 text-gray-400" />
             </div>
-            <h1 className="text-5xl font-bold text-gray-900 mb-4">
-              Find Your <span className="text-gradient">Dream Job</span>
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Join innovative companies and build your career with exciting opportunities
-            </p>
-            <div className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-white rounded-full shadow-lg">
-              <TrendingUp className="w-5 h-5 text-green-600" />
-              <span className="font-semibold text-gray-900">{jobs.length} Open Positions</span>
-            </div>
+            <input
+              type="text"
+              className="w-full pl-14 pr-6 py-4 rounded-full text-gray-900 bg-white placeholder-gray-500 shadow-xl focus:ring-4 focus:ring-blue-500/30 focus:outline-none transition-all text-lg"
+              placeholder="Search by job title, company, or keywords..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-4 mb-8 pb-6 border-b border-gray-200">
+          <div className="flex items-center gap-2 text-gray-700 font-medium">
+            <Filter className="w-5 h-5" />
+            <span>Filters:</span>
           </div>
 
-          {/* Search and Filter */}
-          <div className="card p-6 mb-8 animate-fadeInUp">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by job title, company, or location..."
-                  className="input pl-12"
-                />
-              </div>
-              <div className="relative">
-                <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="input pl-12"
-                >
-                  <option value="all">All Job Types</option>
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Contract">Contract</option>
-                  <option value="Internship">Internship</option>
-                </select>
-              </div>
-            </div>
+          <div className="relative group">
+            <select
+              className="appearance-none bg-white border border-gray-300 rounded-full py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:border-blue-500 transition-colors"
+              value={filters.type}
+              onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+            >
+              <option>All Types</option>
+              <option>Full-time</option>
+              <option>Part-time</option>
+              <option>Contract</option>
+              <option>Internship</option>
+            </select>
+            <ChevronRight className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-gray-500 pointer-events-none" />
           </div>
 
-          {/* Job Listings */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="relative group">
+            <select
+              className="appearance-none bg-white border border-gray-300 rounded-full py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:border-blue-500 transition-colors"
+              value={filters.experience}
+              onChange={(e) => setFilters(prev => ({ ...prev, experience: e.target.value }))}
+            >
+              <option>All Levels</option>
+              <option>Fresher</option>
+              <option>0-2 Years</option>
+              <option>2-5 Years</option>
+              <option>5+ Years</option>
+            </select>
+            <ChevronRight className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-gray-500 pointer-events-none" />
+          </div>
+
+          <div className="ml-auto text-sm text-gray-500">
+            Scanning <strong>{filteredJobs.length}</strong> available positions
+          </div>
+        </div>
+
+        {/* Jobs Grid */}
+        {error ? (
+          <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
+            <div className="text-red-500 mb-4 text-lg">{error}</div>
+            <button onClick={fetchJobs} className="btn btn-primary">Try Again</button>
+          </div>
+        ) : filteredJobs.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
             {filteredJobs.map((job, index) => (
-              <JobCard key={job.id} job={job} onApply={handleViewDetails} index={index} />
+              <JobCard
+                key={job.id}
+                job={job}
+                index={index}
+                onApply={handleApplyClick}
+              />
             ))}
           </div>
-
-          {filteredJobs.length === 0 && (
-            <div className="text-center py-16 animate-fadeIn">
-              <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No jobs found</h3>
-              <p className="text-gray-600">Try adjusting your search or filters</p>
+        ) : (
+          <div className="text-center py-16 bg-white rounded-2xl shadow-sm border border-dashed border-gray-300">
+            <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-10 h-10 text-gray-400" />
             </div>
-          )}
-        </div>
-      )}
-
-      {view === "details" && selectedJob && (
-        <JobDetails
-          job={selectedJob}
-          onBack={handleBackToListings}
-          onApplyNow={handleApplyNow}
-        />
-      )}
-
-      {view === "apply" && selectedJob && (
-        <ApplicationForm
-          job={selectedJob}
-          onBack={() => setView("details")}
-          onSuccess={handleApplicationSuccess}
-        />
-      )}
-
-      {view === "success" && (
-        <div className="max-w-2xl mx-auto card p-12 text-center animate-scaleIn">
-          <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-12 h-12 text-white" />
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No jobs found</h3>
+            <p className="text-gray-500">Try adjusting your search or filters to find what you're looking for.</p>
+            <button
+              onClick={() => { setSearchTerm(""); setFilters({ type: "All Types", experience: "All Levels" }) }}
+              className="mt-4 btn btn-outline"
+            >
+              Clear Filters
+            </button>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Application Submitted!</h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Thank you for applying for the <span className="font-semibold text-gray-900">{selectedJob.title}</span> position at <span className="font-semibold text-gray-900">{selectedJob.company}</span>.
-            We'll review your application and get back to you soon.
-          </p>
-          <button
-            onClick={handleBackToListings}
-            className="btn btn-primary px-8 py-3 text-lg font-semibold"
-          >
-            Back to Job Listings
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

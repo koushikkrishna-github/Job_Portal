@@ -18,7 +18,10 @@ import {
   getJobs,
   createJob,
   updateJob,
-  deleteJob
+  deleteJob,
+  scheduleInterview,
+  getInterviews,
+  updateInterviewStatus
 } from "../api";
 
 function JobManagementTab() {
@@ -55,7 +58,7 @@ function JobManagementTab() {
 
   const handleDeleteJob = async (jobId) => {
     if (!window.confirm("Are you sure you want to delete this job?")) return;
-    
+
     try {
       await deleteJob(jobId);
       await fetchJobs();
@@ -244,7 +247,7 @@ function JobFormModal({ job, onClose }) {
       } else {
         await createJob(cleanedData);
       }
-      
+
       onClose();
     } catch (error) {
       console.error("Error saving job:", error);
@@ -278,7 +281,7 @@ function JobFormModal({ job, onClose }) {
           {currentStep === 1 && (
             <div className="space-y-5 animate-fadeIn">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-              
+
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Job Title *</label>
@@ -627,6 +630,7 @@ function ApplicationsTab() {
       Pending: { color: "bg-yellow-100 text-yellow-800 border-yellow-200", icon: Clock },
       Reviewed: { color: "bg-blue-100 text-blue-800 border-blue-200", icon: Eye },
       Shortlisted: { color: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle },
+      Placed: { color: "bg-indigo-100 text-indigo-800 border-indigo-200", icon: Award },
       Rejected: { color: "bg-red-100 text-red-800 border-red-200", icon: XCircle }
     };
 
@@ -688,31 +692,32 @@ function ApplicationsTab() {
       {/* Statistics Cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
-          title="Total Applications"
+          title="Received"
           value={statistics?.total || 0}
           icon={Users}
           color="from-blue-500 to-blue-600"
           trend={12}
         />
         <StatCard
-          title="Pending Review"
-          value={statistics?.by_status?.Pending || 0}
-          icon={Clock}
-          color="from-yellow-500 to-yellow-600"
-          trend={-5}
+          title="Processed"
+          value={(statistics?.total || 0) - (statistics?.by_status?.Pending || 0)}
+          icon={Eye}
+          color="from-purple-500 to-purple-600"
+          trend={8}
         />
         <StatCard
           title="Shortlisted"
           value={statistics?.by_status?.Shortlisted || 0}
           icon={CheckCircle}
           color="from-green-500 to-green-600"
-          trend={8}
+          trend={5}
         />
         <StatCard
-          title="Open Positions"
-          value={positions.length}
-          icon={Briefcase}
-          color="from-purple-500 to-purple-600"
+          title="Placed"
+          value={statistics?.by_status?.Placed || 0}
+          icon={Award}
+          color="from-indigo-500 to-indigo-600"
+          trend={100}
         />
       </div>
 
@@ -798,6 +803,7 @@ function ApplicationsTab() {
               <option value="Pending">Pending</option>
               <option value="Reviewed">Reviewed</option>
               <option value="Shortlisted">Shortlisted</option>
+              <option value="Placed">Placed</option>
               <option value="Rejected">Rejected</option>
             </select>
           </div>
@@ -891,6 +897,13 @@ function ApplicationsTab() {
                         title="View Details"
                       >
                         <Eye className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => handleScheduleInterviewClick(app)}
+                        className="p-2.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        title="Schedule Interview"
+                      >
+                        <Calendar className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => handleDelete(app.ID)}
@@ -1038,7 +1051,7 @@ function ApplicationsTab() {
                       <span className="text-sm font-semibold text-blue-600">View</span>
                     </div>
                   </button>
-                  
+
                   <button
                     onClick={() => {
                       try {
@@ -1108,7 +1121,7 @@ export default function AdminDashboard() {
       <div className="bg-white shadow-sm border-b sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Admin Dashboard</h1>
-          
+
           {/* Tabs */}
           <div className="flex gap-2 border-b">
             {tabs.map((tab) => {
@@ -1117,11 +1130,10 @@ export default function AdminDashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-3 font-medium transition-all ${
-                    activeTab === tab.id
-                      ? "text-blue-600 border-b-2 border-blue-600"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
+                  className={`flex items-center gap-2 px-6 py-3 font-medium transition-all ${activeTab === tab.id
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-600 hover:text-gray-900"
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   {tab.label}
