@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Services from './pages/Services';
 import Contact from './pages/Contact';
+import FindJobs from './pages/FindJobs';
 import CareerPortal from './pages/CareerPortal';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
@@ -30,6 +31,7 @@ function App() {
         <Route path="/about" element={<Layout><About /></Layout>} />
         <Route path="/services" element={<Layout><Services /></Layout>} />
         <Route path="/contact" element={<Layout><Contact /></Layout>} />
+        <Route path="/find-jobs" element={<Layout><FindJobs /></Layout>} />
         <Route path="/careers" element={<Layout><CareerPortal /></Layout>} />
 
         {/* Admin Routes (Standalone Layout) */}

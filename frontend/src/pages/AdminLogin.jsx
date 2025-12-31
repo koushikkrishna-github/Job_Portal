@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Lock, User, AlertCircle, Eye, EyeOff, KeyRound, Sparkles } from "lucide-react";
+import { Shield, Lock, User, AlertCircle, Eye, EyeOff, KeyRound, Sparkles, Building2, Fingerprint, Terminal, RefreshCw } from "lucide-react";
 import { adminLogin } from "../api";
 
 export default function AdminLogin({ onLoginSuccess }) {
@@ -13,7 +13,6 @@ export default function AdminLogin({ onLoginSuccess }) {
   const [capsLockOn, setCapsLockOn] = useState(false);
 
   useEffect(() => {
-    // Auto-focus username field
     document.getElementById("username-input")?.focus();
   }, []);
 
@@ -26,7 +25,7 @@ export default function AdminLogin({ onLoginSuccess }) {
     setError("");
 
     if (!credentials.username || !credentials.password) {
-      setError("Please enter both username and password");
+      setError("AUTHENTICATION_FAILED: Null credentials detected.");
       return;
     }
 
@@ -34,173 +33,132 @@ export default function AdminLogin({ onLoginSuccess }) {
 
     try {
       const response = await adminLogin(credentials.username, credentials.password);
-
-      // Store token in localStorage
       localStorage.setItem("adminToken", response.token);
       localStorage.setItem("adminUsername", response.username);
-
-      // Call success callback
       onLoginSuccess();
     } catch (err) {
-      setError(err.message || "Invalid credentials");
+      setError(err.message || "ACCESS_DENIED: Invalid security clearance.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: '4s' }}></div>
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-6 relative overflow-hidden font-['Plus_Jakarta_Sans']">
+      {/* Mesh Gradient Background */}
+      <div className="absolute inset-0 opacity-30 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-600 rounded-full blur-[120px]" />
       </div>
 
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo/Brand Section */}
-        <div className="text-center mb-8 animate-fadeInDown">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl mb-4 shadow-xl">
-            <Shield className="w-10 h-10 text-white" />
+      <div className="w-full max-w-lg relative z-10 space-y-12">
+        {/* Branding */}
+        <div className="flex flex-col items-center text-center animate-fadeInDown">
+          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-2xl relative overflow-hidden mb-6 group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 to-emerald-500 opacity-90 transition-transform duration-500 group-hover:scale-110" />
+            <Building2 className="w-8 h-8 text-white relative z-10" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Admin <span className="text-gradient">Portal</span>
-          </h1>
-          <p className="text-gray-600 flex items-center justify-center gap-2">
-            <KeyRound className="w-4 h-4" />
-            Secure Access Required
-          </p>
+          <div>
+            <h1 className="text-3xl font-bold text-white tracking-widest leading-none mb-2">NEXUS</h1>
+            <p className="text-[10px] text-emerald-400 font-bold tracking-[0.4em] uppercase">Command Center</p>
+          </div>
         </div>
 
-        {/* Login Card */}
-        <div className="card p-8 shadow-2xl animate-scaleIn">
-          {/* Header */}
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-            <p className="text-gray-600">Sign in to access the dashboard</p>
+        {/* Login Interface */}
+        <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-2xl p-8 md:p-12 shadow-2xl animate-scaleIn">
+          <div className="mb-8 flex items-center gap-4">
+            <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center">
+              <Shield className="w-5 h-5 text-indigo-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white tracking-tight">Access Gateway</h2>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Secure Link Required</p>
+            </div>
           </div>
 
-          {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start gap-3 animate-fadeIn">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-red-800 font-medium text-sm">{error}</p>
-              </div>
+            <div className="mb-8 p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-3 animate-fadeIn">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-red-400 font-bold text-[11px] uppercase tracking-widest leading-relaxed">{error}</p>
             </div>
           )}
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Username Field */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Username
-              </label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest ml-4">Identifier</label>
+              <div className="relative group">
+                <User className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600 group-focus-within:text-indigo-400 transition-colors" />
                 <input
                   id="username-input"
                   type="text"
                   value={credentials.username}
                   onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
                   onKeyDown={handleKeyDown}
-                  placeholder="Enter your username"
-                  className="input pl-12 pr-4 py-3 text-base"
+                  placeholder="AGENT_ID"
+                  className="w-full bg-white/10 border-2 border-white/10 rounded-2xl pl-16 pr-6 py-5 text-white font-bold outline-none focus:border-indigo-500 focus:bg-white/20 transition-all placeholder:text-gray-500"
                   disabled={loading}
-                  autoComplete="username"
                 />
               </div>
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest ml-4">Access Vector</label>
+              <div className="relative group">
+                <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600 group-focus-within:text-indigo-400 transition-colors" />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={credentials.password}
                   onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
                   onKeyDown={handleKeyDown}
-                  placeholder="Enter your password"
-                  className="input pl-12 pr-12 py-3 text-base"
+                  placeholder="ENCRYPTION_KEY"
+                  className="w-full bg-white/10 border-2 border-white/10 rounded-2xl pl-16 pr-16 py-5 text-white font-bold outline-none focus:border-indigo-500 focus:bg-white/20 transition-all placeholder:text-gray-500"
                   disabled={loading}
-                  autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                  tabIndex={-1}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-
-              {/* Caps Lock Warning */}
               {capsLockOn && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-yellow-700 bg-yellow-50 px-3 py-2 rounded-lg animate-fadeIn">
-                  <AlertCircle className="w-4 h-4" />
-                  <span>Caps Lock is on</span>
+                <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-yellow-500 uppercase tracking-widest">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>Caps Lock Detected</span>
                 </div>
               )}
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3.5 px-6 rounded-xl font-semibold text-white text-base transition-all shadow-lg ${loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl hover:-translate-y-0.5"
-                }`}
+              className="w-full group relative flex items-center justify-center p-0.5 rounded-xl bg-gradient-to-tr from-indigo-600 to-emerald-500 overflow-hidden active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg"
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Signing in...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  Sign In
-                </span>
-              )}
+              <div className="w-full h-full bg-[#0f172a] rounded-[11px] py-5 transition-all group-hover:bg-transparent flex items-center justify-center gap-3">
+                {loading ? (
+                  <RefreshCw className="w-5 h-5 animate-spin text-white" />
+                ) : (
+                  <>
+                    <Fingerprint className="w-5 h-5 text-white" />
+                    <span className="text-white font-bold uppercase tracking-widest text-xs">Authorize Link</span>
+                  </>
+                )}
+              </div>
             </button>
           </form>
-
-          {/* Footer */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-              <Shield className="w-4 h-4" />
-              <span>Protected by enterprise-grade security</span>
-            </div>
-          </div>
         </div>
 
-        {/* Additional Info */}
-        <div className="mt-6 text-center animate-fadeInUp">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md">
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <span className="text-sm text-gray-700">
-              Authorized personnel only
-            </span>
+        {/* Footer Info */}
+        <div className="flex items-center justify-between text-gray-600 px-4 animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <Terminal className="w-4 h-4" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">v4.0.28-SECURE</span>
           </div>
-        </div>
-
-        {/* Keyboard Shortcuts Hint */}
-        <div className="mt-4 text-center text-xs text-gray-500 animate-fadeIn">
-          <p>Press <kbd className="px-2 py-1 bg-gray-200 rounded text-gray-700 font-mono">Enter</kbd> to sign in</p>
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-emerald-500" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">End-to-End Encrypted</span>
+          </div>
         </div>
       </div>
     </div>

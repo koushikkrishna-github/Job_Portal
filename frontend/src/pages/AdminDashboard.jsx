@@ -5,7 +5,8 @@ import {
   CheckCircle, Clock, XCircle, AlertCircle, BarChart3,
   FileText, Mail, Phone, GraduationCap, Award, X,
   ChevronDown, ChevronUp, ArrowUpRight, ArrowDownRight,
-  Plus, Edit2, Save, MapPin, DollarSign, Building2
+  Plus, Edit2, Save, MapPin, DollarSign, Building2,
+  LayoutDashboard, ShieldCheck, Activity, Globe, ArrowRight
 } from "lucide-react";
 import {
   getApplications,
@@ -18,11 +19,30 @@ import {
   getJobs,
   createJob,
   updateJob,
-  deleteJob,
-  scheduleInterview,
-  getInterviews,
-  updateInterviewStatus
+  deleteJob
 } from "../api";
+
+// High-Fidelity Stat Card - Optimized Density
+const StatCard = ({ title, value, icon: Icon, color, trend, delay }) => (
+  <div
+    className="group relative bg-white border border-gray-100 rounded-2xl p-5 md:p-6 hover:border-indigo-200 transition-all duration-300 hover:shadow-xl animate-fadeInUp animate-fill-both"
+    style={{ animationDelay: `${delay}ms` }}
+  >
+    <div className="flex items-center justify-between mb-4">
+      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+        <Icon className="w-5 h-5 text-white" />
+      </div>
+      {trend !== undefined && (
+        <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold tracking-widest ${trend >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+          {trend >= 0 ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+          {Math.abs(trend)}%
+        </div>
+      )}
+    </div>
+    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{title}</p>
+    <h3 className="text-2xl font-bold text-gray-900 tracking-tight">{value}</h3>
+  </div>
+);
 
 function JobManagementTab() {
   const [jobs, setJobs] = useState([]);
@@ -57,137 +77,98 @@ function JobManagementTab() {
   };
 
   const handleDeleteJob = async (jobId) => {
-    if (!window.confirm("Are you sure you want to delete this job?")) return;
+    if (!window.confirm("Protocol confirmation required: Deleting job node?")) return;
 
     try {
       await deleteJob(jobId);
       await fetchJobs();
     } catch (error) {
       console.error("Error deleting job:", error);
-      alert("Failed to delete job");
     }
-  };
-
-  const handleFormClose = () => {
-    setShowJobForm(false);
-    setEditingJob(null);
-    fetchJobs();
   };
 
   if (loading) {
     return (
-      <div className="text-center py-16">
-        <RefreshCw className="w-16 h-16 animate-spin text-blue-600 mx-auto mb-4" />
-        <p className="text-lg text-gray-600">Loading jobs...</p>
+      <div className="flex items-center justify-center py-20">
+        <RefreshCw className="w-10 h-10 animate-spin text-indigo-600" />
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Job Management</h2>
-          <p className="text-gray-600">Create and manage job postings</p>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Job Listings</h2>
+          <p className="text-gray-400 font-medium text-sm">Manage active recruitment roles</p>
         </div>
         <button
           onClick={handleCreateJob}
-          className="btn btn-primary flex items-center gap-2 px-6 py-3"
+          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg transition-all"
         >
-          <Plus className="w-5 h-5" />
-          Create New Job
+          <Plus className="w-4 h-4" />
+          Add New Role
         </button>
       </div>
 
-      {/* Jobs Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {jobs.map((job, idx) => (
           <div
             key={job.id}
-            className="card p-6 hover-lift animate-fadeInUp"
-            style={{ animationDelay: `${idx * 50}ms` }}
+            className="group bg-white border border-gray-100 rounded-2xl p-5 md:p-6 hover:border-indigo-100 transition-all duration-300"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{job.title}</h3>
-                <p className="text-sm text-gray-600 flex items-center gap-1">
-                  <Building2 className="w-3 h-3" />
-                  {job.company}
-                </p>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`w-2 h-2 rounded-full ${job.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{job.status}</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 tracking-tight leading-tight mb-1">{job.title}</h3>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{job.company}</p>
               </div>
-              <span className={`badge ${job.status === 'Active' ? 'badge-success' : 'bg-gray-100 text-gray-600'}`}>
-                {job.status}
-              </span>
             </div>
 
-            <div className="space-y-2 mb-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <MapPin className="w-4 h-4" />
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center gap-3 text-sm text-gray-500 font-medium">
+                <MapPin className="w-4 h-4 text-gray-300" />
                 {job.location}
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Briefcase className="w-4 h-4" />
-                {job.type} • {job.experience}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <DollarSign className="w-4 h-4" />
-                {job.salary}
+              <div className="flex items-center gap-3 text-sm text-gray-500 font-medium">
+                <Briefcase className="w-4 h-4 text-gray-300" />
+                {job.type}
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-4">
-              {job.skills.slice(0, 3).map((skill, idx) => (
-                <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
-                  {skill}
-                </span>
-              ))}
-              {job.skills.length > 3 && (
-                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                  +{job.skills.length - 3}
-                </span>
-              )}
-            </div>
-
-            <div className="flex gap-2 pt-4 border-t">
+            <div className="flex gap-3 pt-4 border-t border-gray-50">
               <button
                 onClick={() => handleEditJob(job)}
-                className="flex-1 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-indigo-50 text-indigo-600 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-indigo-100 transition-colors"
               >
-                <Edit2 className="w-4 h-4" />
-                Edit
+                Configure
               </button>
               <button
                 onClick={() => handleDeleteJob(job.id)}
-                className="flex-1 px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                className="p-3 text-gray-300 hover:text-red-500 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
-                Delete
               </button>
             </div>
           </div>
         ))}
+
+        {jobs.length === 0 && (
+          <div className="col-span-full py-20 text-center bg-gray-50/50 rounded-[3rem] border-2 border-dashed border-gray-100">
+            <Briefcase className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-900 uppercase tracking-tight mb-2">Network Idle</h3>
+            <p className="text-gray-400 font-medium text-sm">No active recruitment nodes detected.</p>
+          </div>
+        )}
       </div>
 
-      {jobs.length === 0 && (
-        <div className="text-center py-16 card">
-          <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No jobs posted yet</h3>
-          <p className="text-gray-600 mb-6">Create your first job posting to get started</p>
-          <button
-            onClick={handleCreateJob}
-            className="btn btn-primary inline-flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            Create First Job
-          </button>
-        </div>
-      )}
-
-      {/* Job Form Modal */}
       {showJobForm && (
         <JobFormModal
           job={editingJob}
-          onClose={handleFormClose}
+          onClose={() => { setShowJobForm(false); fetchJobs(); }}
         />
       )}
     </div>
@@ -195,11 +176,10 @@ function JobManagementTab() {
 }
 
 function JobFormModal({ job, onClose }) {
-  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(job || {
     title: "",
-    company: "",
+    company: "Nexus Staffing Solutions",
     location: "",
     type: "Full-time",
     experience: "Fresher",
@@ -216,316 +196,77 @@ function JobFormModal({ job, onClose }) {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handleArrayChange = (field, index, value) => {
-    const newArray = [...formData[field]];
-    newArray[index] = value;
-    setFormData({ ...formData, [field]: newArray });
-  };
-
-  const handleArrayAdd = (field) => {
-    setFormData({ ...formData, [field]: [...formData[field], ""] });
-  };
-
-  const handleArrayRemove = (field, index) => {
-    const newArray = formData[field].filter((_, i) => i !== index);
-    setFormData({ ...formData, [field]: newArray });
-  };
-
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const cleanedData = {
-        ...formData,
-        responsibilities: formData.responsibilities.filter(r => r.trim()),
-        requirements: formData.requirements.filter(r => r.trim()),
-        skills: formData.skills.filter(s => s.trim()),
-        benefits: formData.benefits.filter(b => b.trim())
-      };
-
-      if (job) {
-        await updateJob(job.id, cleanedData);
-      } else {
-        await createJob(cleanedData);
-      }
-
+      if (job) await updateJob(job.id, formData);
+      else await createJob(formData);
       onClose();
     } catch (error) {
       console.error("Error saving job:", error);
-      alert("Failed to save job");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scaleIn">
-        <div className="sticky top-0 bg-white border-b px-8 py-6 z-10">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                {job ? "Edit Job" : "Create New Job"}
-              </h2>
-              <p className="text-sm text-gray-600 mt-1">Fill in the job details below</p>
+    <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
+        <div className="bg-gray-50/50 border-b border-gray-100 px-6 py-5 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+              {job ? "Edit Job Posting" : "Create New Job"}
+            </h2>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-white rounded-xl transition-all shadow-sm">
+            <X className="w-5 h-5 text-gray-400" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Job Title</label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => handleChange("title", e.target.value)}
+                className="w-full px-5 py-3 bg-white border-2 border-gray-100 rounded-xl focus:bg-white focus:border-indigo-600 outline-none transition-all text-gray-900 font-medium shadow-sm text-sm"
+                placeholder="e.g. Software Engineer"
+              />
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
-            >
-              <X className="w-6 h-6" />
-            </button>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Location</label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => handleChange("location", e.target.value)}
+                className="w-full px-5 py-3 bg-white border-2 border-gray-100 rounded-xl focus:bg-white focus:border-indigo-600 outline-none transition-all text-gray-900 font-medium shadow-sm text-sm"
+                placeholder="e.g. Hyderabad / Remote"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Description</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              rows="4"
+              className="w-full px-5 py-3 bg-white border-2 border-gray-100 rounded-xl focus:bg-white focus:border-indigo-600 outline-none transition-all text-gray-900 font-medium shadow-sm text-sm"
+            />
           </div>
         </div>
 
-        <div className="p-8 space-y-6">
-          {currentStep === 1 && (
-            <div className="space-y-5 animate-fadeIn">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-
-              <div className="grid md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Job Title *</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => handleChange("title", e.target.value)}
-                    placeholder="e.g., Python Developer"
-                    className="input"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Company Name *</label>
-                  <input
-                    type="text"
-                    value={formData.company}
-                    onChange={(e) => handleChange("company", e.target.value)}
-                    placeholder="e.g., Tech Innovations Ltd"
-                    className="input"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Location *</label>
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => handleChange("location", e.target.value)}
-                    placeholder="e.g., Hyderabad, India"
-                    className="input"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Job Type *</label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => handleChange("type", e.target.value)}
-                    className="input"
-                  >
-                    <option value="Full-time">Full-time</option>
-                    <option value="Part-time">Part-time</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Internship">Internship</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Experience Level *</label>
-                  <select
-                    value={formData.experience}
-                    onChange={(e) => handleChange("experience", e.target.value)}
-                    className="input"
-                  >
-                    <option value="Fresher">Fresher</option>
-                    <option value="1-3 years">1-3 years</option>
-                    <option value="3-5 years">3-5 years</option>
-                    <option value="5+ years">5+ years</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Salary Range *</label>
-                  <input
-                    type="text"
-                    value={formData.salary}
-                    onChange={(e) => handleChange("salary", e.target.value)}
-                    placeholder="e.g., ₹3-5 LPA"
-                    className="input"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Job Description *</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => handleChange("description", e.target.value)}
-                  placeholder="Describe the role and what the candidate will be doing..."
-                  rows="4"
-                  className="input resize-none"
-                />
-              </div>
-            </div>
-          )}
-
-          {currentStep === 2 && (
-            <div className="space-y-6 animate-fadeIn">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Job Details</h3>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Responsibilities</label>
-                {formData.responsibilities.map((resp, idx) => (
-                  <div key={idx} className="flex gap-2 mb-3">
-                    <input
-                      type="text"
-                      value={resp}
-                      onChange={(e) => handleArrayChange("responsibilities", idx, e.target.value)}
-                      placeholder="e.g., Develop and maintain applications"
-                      className="input flex-1"
-                    />
-                    {formData.responsibilities.length > 1 && (
-                      <button
-                        onClick={() => handleArrayRemove("responsibilities", idx)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  onClick={() => handleArrayAdd("responsibilities")}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Responsibility
-                </button>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Requirements</label>
-                {formData.requirements.map((req, idx) => (
-                  <div key={idx} className="flex gap-2 mb-3">
-                    <input
-                      type="text"
-                      value={req}
-                      onChange={(e) => handleArrayChange("requirements", idx, e.target.value)}
-                      placeholder="e.g., Bachelor's degree in Computer Science"
-                      className="input flex-1"
-                    />
-                    {formData.requirements.length > 1 && (
-                      <button
-                        onClick={() => handleArrayRemove("requirements", idx)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  onClick={() => handleArrayAdd("requirements")}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Requirement
-                </button>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Required Skills</label>
-                {formData.skills.map((skill, idx) => (
-                  <div key={idx} className="flex gap-2 mb-3">
-                    <input
-                      type="text"
-                      value={skill}
-                      onChange={(e) => handleArrayChange("skills", idx, e.target.value)}
-                      placeholder="e.g., Python, Django, React"
-                      className="input flex-1"
-                    />
-                    {formData.skills.length > 1 && (
-                      <button
-                        onClick={() => handleArrayRemove("skills", idx)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  onClick={() => handleArrayAdd("skills")}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Skill
-                </button>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Benefits</label>
-                {formData.benefits.map((benefit, idx) => (
-                  <div key={idx} className="flex gap-2 mb-3">
-                    <input
-                      type="text"
-                      value={benefit}
-                      onChange={(e) => handleArrayChange("benefits", idx, e.target.value)}
-                      placeholder="e.g., Health Insurance, Remote Work"
-                      className="input flex-1"
-                    />
-                    {formData.benefits.length > 1 && (
-                      <button
-                        onClick={() => handleArrayRemove("benefits", idx)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  onClick={() => handleArrayAdd("benefits")}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Benefit
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="sticky bottom-0 bg-gray-50 border-t px-8 py-6 flex gap-4">
-          {currentStep > 1 && (
-            <button
-              onClick={() => setCurrentStep(1)}
-              className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-white"
-            >
-              Previous
-            </button>
-          )}
-          {currentStep < 2 ? (
-            <button
-              onClick={() => setCurrentStep(2)}
-              className="flex-1 btn btn-primary py-3"
-            >
-              Next Step
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="flex-1 btn btn-primary py-3 flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <RefreshCw className="w-5 h-5 animate-spin" />
-              ) : (
-                <Save className="w-5 h-5" />
-              )}
-              {loading ? "Saving..." : job ? "Update Job" : "Create Job"}
-            </button>
-          )}
+        <div className="bg-gray-50 border-t border-gray-100 px-6 py-5 flex items-center justify-between">
+          <button onClick={onClose} className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-red-500 transition-colors">Cancel</button>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg transition-all disabled:opacity-50"
+          >
+            {loading ? "Saving..." : job ? "Save Changes" : "Create Posting"}
+          </button>
         </div>
       </div>
     </div>
@@ -537,28 +278,21 @@ function ApplicationsTab() {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filterPosition, setFilterPosition] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedApp, setSelectedApp] = useState(null);
-  const [sortField, setSortField] = useState("ID");
-  const [sortOrder, setSortOrder] = useState("desc");
 
   useEffect(() => {
     fetchData();
-  }, [filterPosition, filterStatus]);
+  }, [filterPosition]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const filters = {};
-      if (filterPosition !== 'all') filters.position = filterPosition;
-      if (filterStatus !== 'all') filters.status = filterStatus;
-
+      const filters = filterPosition !== 'all' ? { position: filterPosition } : {};
       const [appsData, statsData] = await Promise.all([
         getApplications(filters),
         getStatistics()
       ]);
-
       setApplications(appsData);
       setStatistics(statsData);
     } catch (error) {
@@ -569,348 +303,143 @@ function ApplicationsTab() {
   };
 
   const handleDownloadExcel = async () => {
-    try {
-      await downloadAdminExcel(filterPosition);
-    } catch (error) {
-      console.error("Error downloading Excel:", error);
-      alert("Failed to download Excel file. Please try again.");
-    }
+    try { await downloadAdminExcel(filterPosition); }
+    catch (error) { console.error("Export failure:", error); }
   };
 
   const handleStatusChange = async (appId, newStatus) => {
     try {
       await updateApplicationStatus(appId, newStatus);
       await fetchData();
-    } catch (error) {
-      console.error("Error updating status:", error);
-    }
+    } catch (error) { console.error("Status update failure:", error); }
   };
 
   const handleDelete = async (appId) => {
-    if (!window.confirm("Are you sure you want to delete this application?")) return;
-
+    if (!window.confirm("Confirm deletion of candidate dossier?")) return;
     try {
       await deleteApplication(appId);
       await fetchData();
       setSelectedApp(null);
-    } catch (error) {
-      console.error("Error deleting application:", error);
-    }
+    } catch (error) { console.error("Deletion failure:", error); }
   };
 
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortOrder("asc");
-    }
-  };
-
-  const filteredApplications = applications
-    .filter(app =>
-      (app.Name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (app.Email?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (app.Position?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
-    )
-    .sort((a, b) => {
-      const aVal = a[sortField];
-      const bVal = b[sortField];
-      if (sortOrder === "asc") {
-        return aVal > bVal ? 1 : -1;
-      } else {
-        return aVal < bVal ? 1 : -1;
-      }
-    });
-
-  const positions = statistics?.by_position ? Object.keys(statistics.by_position) : [];
+  const filteredApplications = applications.filter(app =>
+    (app.Name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (app.Email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (app.Position?.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   const getStatusBadge = (status) => {
-    const badges = {
-      Pending: { color: "bg-yellow-100 text-yellow-800 border-yellow-200", icon: Clock },
-      Reviewed: { color: "bg-blue-100 text-blue-800 border-blue-200", icon: Eye },
-      Shortlisted: { color: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle },
-      Placed: { color: "bg-indigo-100 text-indigo-800 border-indigo-200", icon: Award },
-      Rejected: { color: "bg-red-100 text-red-800 border-red-200", icon: XCircle }
+    const config = {
+      Pending: { bg: "bg-gray-50", text: "text-gray-400" },
+      Reviewed: { bg: "bg-indigo-50", text: "text-indigo-600" },
+      Shortlisted: { bg: "bg-emerald-50", text: "text-emerald-600" },
+      Rejected: { bg: "bg-red-50", text: "text-red-600" }
     };
-
-    const badge = badges[status] || badges.Pending;
-    const Icon = badge.icon;
-
+    const style = config[status] || config.Pending;
     return (
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border ${badge.color}`}>
-        <Icon className="w-3.5 h-3.5" />
+      <span className={`px-3 py-1.5 ${style.bg} ${style.text} rounded-lg text-[10px] font-bold uppercase tracking-widest`}>
         {status}
       </span>
     );
   };
 
-  const StatCard = ({ title, value, icon: Icon, color, trend }) => (
-    <div className="card p-6 hover-lift animate-fadeInUp">
-      <div className="flex items-center justify-between mb-4">
-        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center`}>
-          <Icon className="w-6 h-6 text-white" />
-        </div>
-        {trend && (
-          <div className={`flex items-center gap-1 text-sm font-semibold ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {trend > 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-            {Math.abs(trend)}%
-          </div>
-        )}
-      </div>
-      <h3 className="text-sm font-medium text-gray-600 mb-1">{title}</h3>
-      <p className="text-3xl font-bold text-gray-900">{value}</p>
+  if (loading) return (
+    <div className="flex items-center justify-center py-20">
+      <RefreshCw className="w-10 h-10 animate-spin text-indigo-600" />
     </div>
   );
 
-  if (loading) {
-    return (
-      <div className="text-center py-16">
-        <RefreshCw className="w-16 h-16 animate-spin text-blue-600 mx-auto mb-4" />
-        <p className="text-lg text-gray-600 font-medium">Loading dashboard...</p>
-      </div>
-    );
-  }
-
   return (
-    <div>
-      {/* Action Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-8 animate-fadeIn">
+      {/* Header & Stats */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-100">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Applications Management</h2>
-          <p className="text-gray-600">Track and manage all job applications</p>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-1">Applications</h2>
+          <p className="text-gray-400 font-medium font-sm text-sm">Managing {applications.length} active candidates</p>
         </div>
         <button
           onClick={handleDownloadExcel}
-          className="btn btn-primary flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+          className="group flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg transition-all"
         >
-          <Download className="w-5 h-5 flex-shrink-0" />
-          <span className="font-semibold">Export Excel</span>
+          <Download className="w-4 h-4" />
+          Export Data
         </button>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          title="Received"
-          value={statistics?.total || 0}
-          icon={Users}
-          color="from-blue-500 to-blue-600"
-          trend={12}
-        />
-        <StatCard
-          title="Processed"
-          value={(statistics?.total || 0) - (statistics?.by_status?.Pending || 0)}
-          icon={Eye}
-          color="from-purple-500 to-purple-600"
-          trend={8}
-        />
-        <StatCard
-          title="Shortlisted"
-          value={statistics?.by_status?.Shortlisted || 0}
-          icon={CheckCircle}
-          color="from-green-500 to-green-600"
-          trend={5}
-        />
-        <StatCard
-          title="Placed"
-          value={statistics?.by_status?.Placed || 0}
-          icon={Award}
-          color="from-indigo-500 to-indigo-600"
-          trend={100}
-        />
+      <div className="grid md:grid-cols-4 gap-6">
+        <StatCard title="Total Dossiers" value={statistics?.total || 0} icon={Users} color="from-indigo-600 to-indigo-700" trend={12} delay={100} />
+        <StatCard title="In Evaluation" value={statistics?.by_status?.Reviewed || 0} icon={Activity} color="from-emerald-600 to-emerald-700" trend={8} delay={200} />
+        <StatCard title="Qualified" value={statistics?.by_status?.Shortlisted || 0} icon={ShieldCheck} color="from-purple-600 to-purple-700" trend={5} delay={300} />
+        <StatCard title="Sync Nodes" value={Object.keys(statistics?.by_position || {}).length} icon={Globe} color="from-blue-600 to-blue-700" trend={0} delay={400} />
       </div>
 
-      {/* Position-wise Breakdown */}
-      <div className="card p-6 mb-8 animate-fadeInUp">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-white" />
+      {/* Applications Grid */}
+      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row gap-6 items-center bg-gray-50/10">
+          <div className="flex-1 relative w-full">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Query candidate dossiers..."
+              className="w-full pl-14 pr-8 py-3 bg-white rounded-xl text-gray-900 font-bold border-2 border-gray-100 focus:border-indigo-600 transition-all outline-none text-sm placeholder:text-gray-300 shadow-sm"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Applications by Position</h2>
-            <p className="text-sm text-gray-600">Distribution across all job roles</p>
-          </div>
+          <select
+            className="px-6 py-3 bg-white border-2 border-gray-100 rounded-xl text-[10px] font-bold uppercase tracking-widest text-gray-900 outline-none focus:border-indigo-600 transition-all shadow-sm"
+            value={filterPosition}
+            onChange={e => setFilterPosition(e.target.value)}
+          >
+            <option value="all">All Channels</option>
+            {Object.keys(statistics?.by_position || {}).map(pos => <option key={pos} value={pos}>{pos}</option>)}
+          </select>
         </div>
-        <div className="grid md:grid-cols-3 gap-4">
-          {Object.entries(statistics?.by_position || {}).map(([position, count], idx) => (
-            <div
-              key={position}
-              className="p-5 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-blue-100 hover-lift animate-fadeInUp"
-              style={{ animationDelay: `${idx * 100}ms` }}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-gray-700">{position}</p>
-                <TrendingUp className="w-4 h-4 text-blue-600" />
-              </div>
-              <p className="text-3xl font-bold text-blue-600">{count}</p>
-              <p className="text-xs text-gray-600 mt-1">
-                {((count / (statistics?.total || 1)) * 100).toFixed(1)}% of total
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Filters and Search */}
-      <div className="card p-6 mb-6 animate-fadeInUp">
-        <div className="grid md:grid-cols-4 gap-4">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              <Search className="w-4 h-4 inline mr-2" />
-              Search Applications
-            </label>
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name, email, or position..."
-                className="input pl-12"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              <Filter className="w-4 h-4 inline mr-2" />
-              Position
-            </label>
-            <select
-              value={filterPosition}
-              onChange={(e) => setFilterPosition(e.target.value)}
-              className="input"
-            >
-              <option value="all">All Positions</option>
-              {positions.map(pos => (
-                <option key={pos} value={pos}>{pos}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              <Filter className="w-4 h-4 inline mr-2" />
-              Status
-            </label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="input"
-            >
-              <option value="all">All Status</option>
-              <option value="Pending">Pending</option>
-              <option value="Reviewed">Reviewed</option>
-              <option value="Shortlisted">Shortlisted</option>
-              <option value="Placed">Placed</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Applications Table */}
-      <div className="card overflow-hidden animate-fadeInUp">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
-              <tr>
-                <th
-                  className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
-                  onClick={() => handleSort("ID")}
-                >
-                  <div className="flex items-center gap-2">
-                    ID
-                    {sortField === "ID" && (
-                      sortOrder === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
-                    )}
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
-                  onClick={() => handleSort("Name")}
-                >
-                  <div className="flex items-center gap-2">
-                    Name
-                    {sortField === "Name" && (
-                      sortOrder === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
-                    )}
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Position</th>
-                <th
-                  className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
-                  onClick={() => handleSort("Applied Date")}
-                >
-                  <div className="flex items-center gap-2">
-                    Applied Date
-                    {sortField === "Applied Date" && (
-                      sortOrder === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
-                    )}
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
+            <thead>
+              <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">
+                <th className="px-6 py-6 text-left">Candidate Name</th>
+                <th className="px-6 py-6 text-left">Applied Stream</th>
+                <th className="px-6 py-6 text-left">Status</th>
+                <th className="px-6 py-6 text-right">Operations</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-50">
               {filteredApplications.map((app, idx) => (
-                <tr
-                  key={app.ID}
-                  className="hover:bg-blue-50 transition-colors animate-fadeIn"
-                  style={{ animationDelay: `${idx * 50}ms` }}
-                >
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold text-sm">
-                      {app.ID}
-                    </span>
-                  </td>
+                <tr key={app.ID} className="group hover:bg-indigo-50/30 transition-all duration-300 outline-none">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                        {app.Name?.charAt(0)}
+                      <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all text-sm">
+                        {app.Name?.[0]}
                       </div>
-                      <span className="font-semibold text-gray-900">{app.Name}</span>
+                      <div>
+                        <p className="font-bold text-gray-900 uppercase tracking-tight text-sm">{app.Name}</p>
+                        <p className="text-[10px] text-gray-400 font-medium">{app.Email}</p>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{app.Email}</td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium">
-                      <Briefcase className="w-3.5 h-3.5" />
-                      {app.Position}
-                    </span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{app.Position}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="flex items-center gap-2 text-sm text-gray-600">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      {app["Applied Date"]?.split(' ')[0]}
-                    </span>
+                    {getStatusBadge(app.Status || 'Pending')}
                   </td>
-                  <td className="px-6 py-4">{getStatusBadge(app.Status || 'Pending')}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => setSelectedApp(app)}
-                        className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="View Details"
+                        className="p-2 hover:bg-white rounded-xl transition-all shadow-none hover:shadow-lg group-hover:text-indigo-600 text-gray-300"
                       >
-                        <Eye className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleScheduleInterviewClick(app)}
-                        className="p-2.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                        title="Schedule Interview"
-                      >
-                        <Calendar className="w-5 h-5" />
+                        <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(app.ID)}
-                        className="p-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete"
+                        className="p-2 hover:bg-white rounded-xl transition-all shadow-none hover:shadow-lg hover:text-red-500 text-gray-300"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
@@ -918,187 +447,100 @@ function ApplicationsTab() {
               ))}
             </tbody>
           </table>
-
-          {filteredApplications.length === 0 && (
-            <div className="text-center py-16 animate-fadeIn">
-              <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No applications found</h3>
-              <p className="text-gray-600">Try adjusting your search or filters</p>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Application Details Modal */}
       {selectedApp && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-scaleIn">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 z-10">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Application Details</h2>
-                  <p className="text-sm text-gray-600 mt-1">ID: #{selectedApp.ID}</p>
+        <div className="fixed inset-0 bg-[#0f172a]/90 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
+            <div className="px-6 py-5 bg-gray-50 flex items-center justify-between border-b border-gray-100">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 tracking-tight">Application Details</h2>
+              </div>
+              <button onClick={() => setSelectedApp(null)} className="p-2 hover:bg-white rounded-xl transition-all shadow-sm">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-8 space-y-8">
+              <section>
+                <h3 className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-4">Personal Information</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {[
+                    { label: "Full Name", val: selectedApp.Name },
+                    { label: "Email Node", val: selectedApp.Email },
+                    { label: "Communication", val: selectedApp.Phone },
+                    { label: "Applied For", val: selectedApp.Position }
+                  ].map((item, i) => (
+                    <div key={i} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.label}</p>
+                      <p className="text-base font-bold text-gray-900 tracking-tight">{item.val}</p>
+                    </div>
+                  ))}
                 </div>
+              </section>
+
+              <section>
+                <h3 className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-4">Education</h3>
+                <div className="p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-4">
+                  <div>
+                    <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">College/University</p>
+                    <p className="text-lg font-bold text-gray-900 tracking-tight">{selectedApp.College}</p>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Degree</p>
+                      <p className="text-base font-bold text-gray-700">{selectedApp.Degree}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Passout Year</p>
+                      <p className="text-base font-bold text-gray-700">{selectedApp["Passout Year"]}</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <h3 className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-4">Attachments</h3>
                 <button
-                  onClick={() => setSelectedApp(null)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  onClick={() => viewResume(selectedApp["Resume File"])}
+                  className="w-full p-6 bg-[#0f172a] rounded-2xl flex items-center justify-between hover:bg-[#1e293b] transition-all group"
                 >
-                  <X className="w-6 h-6" />
+                  <div className="flex items-center gap-4 text-left">
+                    <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-indigo-400" />
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-white tracking-tight">{selectedApp["Resume File"]}</p>
+                      <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">Resume Document</p>
+                    </div>
+                  </div>
+                  <Eye className="w-5 h-5 text-white/20 group-hover:text-white transition-all" />
                 </button>
-              </div>
+              </section>
+
+              <section>
+                <h3 className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-4">Evaluation Status</h3>
+                <div className="flex flex-wrap gap-2">
+                  {["Pending", "Reviewed", "Shortlisted", "Rejected"].map(status => (
+                    <button
+                      key={status}
+                      onClick={() => handleStatusChange(selectedApp.ID, status)}
+                      className={`px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all ${selectedApp.Status === status
+                        ? "bg-indigo-600 text-white shadow-xl shadow-indigo-900/40 translate-y-[-2px]"
+                        : "bg-gray-50 text-gray-400 border border-transparent hover:border-gray-100"
+                        }`}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+              </section>
             </div>
 
-            <div className="p-8 space-y-6">
-              {/* Personal Information */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-blue-600" />
-                  Personal Information
-                </h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-gray-50 rounded-xl">
-                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Full Name</label>
-                    <p className="text-gray-900 font-semibold mt-1">{selectedApp.Name}</p>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-xl">
-                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-1">
-                      <Mail className="w-3 h-3" />
-                      Email
-                    </label>
-                    <p className="text-gray-900 mt-1">{selectedApp.Email}</p>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-xl">
-                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-1">
-                      <Phone className="w-3 h-3" />
-                      Phone
-                    </label>
-                    <p className="text-gray-900 mt-1">{selectedApp.Phone}</p>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-xl">
-                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-1">
-                      <Briefcase className="w-3 h-3" />
-                      Position
-                    </label>
-                    <p className="text-gray-900 font-semibold mt-1">{selectedApp.Position}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Education */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-purple-600" />
-                  Education
-                </h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-purple-50 rounded-xl">
-                    <label className="text-xs font-semibold text-purple-700 uppercase tracking-wide">College/University</label>
-                    <p className="text-gray-900 mt-1">{selectedApp.College}</p>
-                  </div>
-                  <div className="p-4 bg-purple-50 rounded-xl">
-                    <label className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Degree</label>
-                    <p className="text-gray-900 mt-1">{selectedApp.Degree}</p>
-                  </div>
-                  <div className="p-4 bg-purple-50 rounded-xl md:col-span-2">
-                    <label className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Passout Year</label>
-                    <p className="text-gray-900 mt-1">{selectedApp["Passout Year"]}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Skills */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-green-600" />
-                  Skills
-                </h3>
-                <div className="p-4 bg-green-50 rounded-xl">
-                  <p className="text-gray-900">{selectedApp.Skills}</p>
-                </div>
-              </div>
-
-              {/* Resume */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-600" />
-                  Resume
-                </h3>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => {
-                      try {
-                        viewResume(selectedApp["Resume File"]);
-                      } catch (error) {
-                        console.error("Error viewing resume:", error);
-                        alert("Failed to open resume. Please try again.");
-                      }
-                    }}
-                    className="w-full p-4 bg-blue-50 hover:bg-blue-100 rounded-xl flex items-center justify-between gap-3 transition-all group cursor-pointer border-2 border-transparent hover:border-blue-300"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
-                        <FileText className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-gray-900 font-semibold group-hover:text-blue-600 transition-colors">
-                          {selectedApp["Resume File"]}
-                        </p>
-                        <p className="text-sm text-gray-600">Uploaded on {selectedApp["Applied Date"]}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Eye className="w-5 h-5 text-blue-600" />
-                      <span className="text-sm font-semibold text-blue-600">View</span>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      try {
-                        downloadResume(selectedApp["Resume File"]);
-                      } catch (error) {
-                        console.error("Error downloading resume:", error);
-                        alert("Failed to download resume. Please try again.");
-                      }
-                    }}
-                    className="w-full px-4 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 text-green-700 rounded-lg font-medium transition-all flex items-center justify-center gap-2 border border-green-200 hover:border-green-300"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download Resume
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-3 text-center">Click to view or download the resume</p>
-              </div>
-
-              {/* Status Update */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Update Application Status</label>
-                <select
-                  value={selectedApp.Status || 'Pending'}
-                  onChange={(e) => handleStatusChange(selectedApp.ID, e.target.value)}
-                  className="input"
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Reviewed">Reviewed</option>
-                  <option value="Shortlisted">Shortlisted</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-8 py-6 flex gap-4">
-              <button
-                onClick={() => setSelectedApp(null)}
-                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-white transition-colors"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => handleDelete(selectedApp.ID)}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold hover:from-red-700 hover:to-red-800 transition-all"
-              >
-                Delete Application
-              </button>
+            <div className="bg-gray-50 p-6 flex items-center justify-between border-t border-gray-100">
+              <button onClick={() => handleDelete(selectedApp.ID)} className="text-[10px] font-bold text-red-500 uppercase tracking-widest hover:text-red-600 transition-colors">Delete Application</button>
+              <button onClick={() => setSelectedApp(null)} className="px-8 py-3 bg-white border border-gray-200 text-gray-900 rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-sm">Close</button>
             </div>
           </div>
         </div>
@@ -1111,43 +553,66 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("applications");
 
   const tabs = [
-    { id: "applications", label: "Applications", icon: Users },
-    { id: "jobs", label: "Job Management", icon: Briefcase }
+    { id: "applications", label: "Intelligence", icon: LayoutDashboard },
+    { id: "jobs", label: "Pipeline Config", icon: Activity }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Admin Dashboard</h1>
-
-          {/* Tabs */}
-          <div className="flex gap-2 border-b">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-3 font-medium transition-all ${activeTab === tab.id
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-600 hover:text-gray-900"
-                    }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  {tab.label}
-                </button>
-              );
-            })}
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row font-['Plus_Jakarta_Sans']">
+      {/* Strategic Sidebar */}
+      <aside className="w-full md:w-64 bg-[#0f172a] md:fixed md:h-full z-40 p-6 flex flex-col">
+        <div className="flex items-center gap-3 mb-10 px-2">
+          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-[#0f172a] shadow-2xl relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 to-emerald-500 opacity-80" />
+            <Building2 className="w-5 h-5 relative z-10 text-white" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-base font-bold text-white leading-none tracking-tight">NEXUS</span>
+            <span className="text-[8px] text-emerald-400 font-bold tracking-widest uppercase mt-0.5">Command Center</span>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {activeTab === "applications" && <ApplicationsTab />}
-        {activeTab === "jobs" && <JobManagementTab />}
-      </div>
+        <nav className="flex-1 space-y-2">
+          {tabs.map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-4 px-6 py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all ${isActive
+                  ? "bg-indigo-600 text-white shadow-xl shadow-indigo-900/50"
+                  : "text-gray-500 hover:text-white hover:bg-white/5"
+                  }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-gray-600"}`} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="pt-8 mt-8 border-t border-white/5">
+          <div className="px-6 py-5 bg-white/5 rounded-xl border border-white/5 hidden md:block">
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">System Load</p>
+            <div className="w-full h-1 bg-white/5 rounded-full mb-3 overflow-hidden">
+              <div className="w-1/3 h-full bg-emerald-500" />
+            </div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+              <ShieldCheck className="w-3 h-3 text-emerald-500" />
+              Secure Link Active
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Command Surface */}
+      <main className="flex-1 md:ml-64 p-6 md:p-10 bg-white">
+        <div className="max-w-7xl mx-auto">
+          {activeTab === "applications" && <ApplicationsTab />}
+          {activeTab === "jobs" && <JobManagementTab />}
+        </div>
+      </main>
     </div>
   );
 }

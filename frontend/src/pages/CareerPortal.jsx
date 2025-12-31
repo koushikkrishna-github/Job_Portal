@@ -1,68 +1,67 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Briefcase, MapPin, Clock, DollarSign, ChevronRight, ArrowLeft,
   Users, Search, Filter, Sparkles, TrendingUp, Award, Target,
-  CheckCircle2, Upload, X, FileText, Calendar, Building2, RefreshCw
+  CheckCircle2, Upload, X, FileText, Calendar, Building2, RefreshCw, ArrowRight, Shield
 } from "lucide-react";
 import { applyJob, getJobs } from "../api";
+import ApplicationForm from "../components/ApplicationForm";
 
 // JobCard Component
 function JobCard({ job, onApply, index }) {
   return (
     <div
-      className="card p-6 hover-lift cursor-pointer group animate-fadeInUp"
-      style={{ animationDelay: `${index * 50}ms` }}
+      className="group relative bg-white border border-gray-100 rounded-[2rem] p-6 md:p-8 hover:border-indigo-200 transition-all duration-500 hover:shadow-xl cursor-pointer animate-fadeInUp animate-fill-both"
+      style={{ animationDelay: `${index * 100}ms` }}
       onClick={() => onApply(job)}
     >
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-6">
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            Strategic Role
+          </div>
+          <h3 className="text-xl md:text-2xl font-black text-gray-900 group-hover:text-indigo-600 transition-colors leading-tight tracking-tight">
             {job.title}
           </h3>
-          <p className="text-sm text-gray-600 flex items-center gap-1">
-            <Building2 className="w-3 h-3" />
+          <p className="text-xs text-indigo-500 font-bold uppercase tracking-[0.3em] mt-2">
             {job.company}
           </p>
         </div>
-        <span className="badge badge-primary">{job.type}</span>
       </div>
 
-      <div className="space-y-2 mb-4">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <MapPin className="w-4 h-4" />
-          {job.location}
+      <div className="grid grid-cols-2 gap-6 mb-8">
+        <div className="space-y-3">
+          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center group-hover:bg-indigo-50 transition-all">
+            <MapPin className="w-5 h-5 text-gray-300 group-hover:text-indigo-600" />
+          </div>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{job.location}</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <DollarSign className="w-4 h-4" />
-          {job.salary}
-        </div>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <Clock className="w-4 h-4" />
-          {job.experience}
+        <div className="space-y-3">
+          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center group-hover:bg-emerald-50 transition-all">
+            <DollarSign className="w-5 h-5 text-gray-300 group-hover:text-emerald-600" />
+          </div>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{job.salary}</p>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        {job.skills.slice(0, 3).map((skill, idx) => (
-          <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
+      <div className="flex flex-wrap gap-2 mb-8">
+        {(job.skills || []).slice(0, 3).map((skill, idx) => (
+          <span key={idx} className="px-3 py-1.5 bg-gray-50 text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] rounded-lg border border-gray-100">
             {skill}
           </span>
         ))}
-        {job.skills.length > 3 && (
-          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-            +{job.skills.length - 3}
-          </span>
-        )}
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <Users className="w-4 h-4" />
-          <span>{job.applicants || 0} applicants</span>
+      <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+          {job.applicants || 0} Applicants
         </div>
-        <div className="flex items-center gap-1 text-blue-600 font-semibold group-hover:gap-2 transition-all">
-          View Details
-          <ChevronRight className="w-4 h-4" />
+        <div className="flex items-center gap-2 text-indigo-600 font-bold uppercase tracking-[0.3em] text-[10px] group-hover:gap-3 transition-all">
+          Explore Role
+          <ArrowRight className="w-4 h-4" />
         </div>
       </div>
     </div>
@@ -72,382 +71,130 @@ function JobCard({ job, onApply, index }) {
 // JobDetails Component
 function JobDetails({ job, onBack, onApplyNow }) {
   return (
-    <div className="max-w-4xl mx-auto animate-fadeIn">
+    <div className="max-w-[1440px] mx-auto animate-fadeIn font-['Plus_Jakarta_Sans']">
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        className="group flex items-center gap-3 text-gray-400 hover:text-indigo-600 mb-8 transition-all font-bold uppercase tracking-[0.3em] text-[10px]"
       >
-        <ArrowLeft className="w-5 h-5" />
-        Back to Listings
+        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-2 transition-transform" />
+        Return to Portal
       </button>
 
-      <div className="card p-8">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6 pb-6 border-b">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
-            <p className="text-lg text-gray-600 flex items-center gap-2">
-              <Building2 className="w-5 h-5" />
-              {job.company}
-            </p>
-          </div>
-          <span className="badge badge-success text-base px-4 py-2">{job.status}</span>
-        </div>
-
-        {/* Quick Info */}
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <div className="p-4 bg-blue-50 rounded-xl">
-            <MapPin className="w-5 h-5 text-blue-600 mb-2" />
-            <p className="text-sm text-gray-600">Location</p>
-            <p className="font-semibold text-gray-900">{job.location}</p>
-          </div>
-          <div className="p-4 bg-green-50 rounded-xl">
-            <DollarSign className="w-5 h-5 text-green-600 mb-2" />
-            <p className="text-sm text-gray-600">Salary</p>
-            <p className="font-semibold text-gray-900">{job.salary}</p>
-          </div>
-          <div className="p-4 bg-purple-50 rounded-xl">
-            <Briefcase className="w-5 h-5 text-purple-600 mb-2" />
-            <p className="text-sm text-gray-600">Job Type</p>
-            <p className="font-semibold text-gray-900">{job.type}</p>
-          </div>
-          <div className="p-4 bg-orange-50 rounded-xl">
-            <Target className="w-5 h-5 text-orange-600 mb-2" />
-            <p className="text-sm text-gray-600">Experience</p>
-            <p className="font-semibold text-gray-900">{job.experience}</p>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-3">Job Description</h2>
-          <p className="text-gray-700 leading-relaxed">{job.description}</p>
-        </div>
-
-        {/* Responsibilities */}
-        {job.responsibilities && job.responsibilities.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-3">Responsibilities</h2>
-            <ul className="space-y-2">
-              {job.responsibilities.map((resp, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-gray-700">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span>{resp}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Requirements */}
-        {job.requirements && job.requirements.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-3">Requirements</h2>
-            <ul className="space-y-2">
-              {job.requirements.map((req, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-gray-700">
-                  <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <span>{req}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Skills */}
-        {job.skills && job.skills.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-3">Required Skills</h2>
-            <div className="flex flex-wrap gap-2">
-              {job.skills.map((skill, idx) => (
-                <span key={idx} className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium">
-                  {skill}
-                </span>
-              ))}
+      <div className="grid lg:grid-cols-12 gap-12 lg:gap-16">
+        <div className="lg:col-span-8 space-y-10">
+          <div className="bg-white border border-gray-100 rounded-[2rem] p-8 md:p-12 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-12 opacity-[0.02] pointer-events-none">
+              <Building2 className="w-[200px] h-[200px]" />
             </div>
-          </div>
-        )}
 
-        {/* Benefits */}
-        {job.benefits && job.benefits.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-3">Benifits</h2>
-            <div className="grid md:grid-cols-2 gap-3">
-              {job.benefits.map((benefit, idx) => (
-                <div key={idx} className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
-                  <Award className="w-5 h-5 text-green-600" />
-                  <span className="text-gray-900">{benefit}</span>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 pb-12 border-b border-gray-50">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-[0.3em]">
+                  Active Engagement
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Apply Button */}
-        <div className="flex items-center justify-between pt-6 border-t">
-          <div className="text-sm text-gray-600">
-            <Calendar className="w-4 h-4 inline mr-1" />
-            Posted: {job.postedDate || 'Recently'}
-          </div>
-          <button
-            onClick={onApplyNow}
-            className="btn btn-primary px-8 py-3 text-lg font-semibold"
-          >
-            Apply Now
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ApplicationForm Component
-function ApplicationForm({ job, onBack, onSuccess }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    college: "",
-    degree: "",
-    year: "",
-    skills: "",
-    resume: null
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e) => {
-    setFormData(prev => ({ ...prev, resume: e.target.files[0] }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      const submitData = new FormData();
-      submitData.append("position", job.title);
-      submitData.append("name", formData.name);
-      submitData.append("email", formData.email);
-      submitData.append("phone", formData.phone);
-      submitData.append("college", formData.college);
-      submitData.append("degree", formData.degree);
-      submitData.append("year", formData.year);
-      submitData.append("skills", formData.skills);
-      submitData.append("resume", formData.resume);
-
-      await applyJob(submitData);
-      onSuccess();
-    } catch (err) {
-      console.error("Application error:", err);
-      setError(err.message || "Failed to submit application. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="max-w-3xl mx-auto animate-fadeIn">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        Back to Job Details
-      </button>
-
-      <div className="card p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Apply for {job.title}</h1>
-          <p className="text-gray-600">at {job.company}</p>
-        </div>
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-            <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-red-700">{error}</p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Information */}
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Personal Information</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                  placeholder="John Doe"
-                />
+                <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-[1.0]">{job.title}</h1>
+                <p className="text-lg text-indigo-500 font-bold uppercase tracking-[0.3em]">{job.company}</p>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                  placeholder="john@example.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                  placeholder="+1 (555) 123-4567"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Education */}
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Education</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  College/University *
-                </label>
-                <input
-                  type="text"
-                  name="college"
-                  value={formData.college}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                  placeholder="MIT"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Degree *
-                </label>
-                <input
-                  type="text"
-                  name="degree"
-                  value={formData.degree}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                  placeholder="B.Tech in Computer Science"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Passout Year *
-                </label>
-                <input
-                  type="text"
-                  name="year"
-                  value={formData.year}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                  placeholder="2024"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Skills */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Skills *
-            </label>
-            <textarea
-              name="skills"
-              value={formData.skills}
-              onChange={handleChange}
-              required
-              rows="3"
-              className="input resize-none"
-              placeholder="Python, JavaScript, React, Node.js, etc."
-            />
-          </div>
-
-          {/* Resume Upload */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Upload Resume *
-            </label>
-            <div className="relative">
-              <input
-                type="file"
-                onChange={handleFileChange}
-                required
-                accept=".pdf,.doc,.docx"
-                className="hidden"
-                id="resume-upload"
-              />
-              <label
-                htmlFor="resume-upload"
-                className="flex items-center justify-center gap-3 p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
-              >
-                {formData.resume ? (
-                  <>
-                    <FileText className="w-6 h-6 text-blue-600" />
-                    <span className="font-medium text-gray-900">{formData.resume.name}</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-6 h-6 text-gray-400" />
-                    <span className="text-gray-600">Click to upload resume (PDF, DOC, DOCX)</span>
-                  </>
-                )}
-              </label>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex gap-4 pt-6">
-            <button
-              type="button"
-              onClick={onBack}
-              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 btn btn-primary px-6 py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <RefreshCw className="w-5 h-5 animate-spin" />
-                  Submitting...
+              <div className="flex flex-col md:items-end gap-4">
+                <span className="px-6 py-2 bg-[#0f172a] text-white rounded-xl text-[10px] font-bold uppercase tracking-[0.3em] shadow-lg">
+                  {job.type}
                 </span>
-              ) : (
-                "Submit Application"
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5 text-indigo-400" />
+                  Indexed: {job.postedDate || "24h ago"}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-12">
+              <div className="max-w-4xl">
+                <h2 className="text-xl font-black text-gray-900 mb-6 tracking-tight flex items-center gap-3">
+                  <div className="w-2 h-6 bg-indigo-600 rounded-full" />
+                  Executive Summary
+                </h2>
+                <p className="text-lg text-gray-500 leading-relaxed font-medium">
+                  {job.description}
+                </p>
+              </div>
+
+              {job.responsibilities && job.responsibilities.length > 0 && (
+                <div className="max-w-4xl">
+                  <h2 className="text-xl font-black text-gray-900 mb-8 tracking-tight flex items-center gap-3">
+                    <div className="w-2 h-6 bg-emerald-500 rounded-full" />
+                    Strategic Responsibilities
+                  </h2>
+                  <div className="grid gap-4">
+                    {job.responsibilities.map((resp, idx) => (
+                      <div key={idx} className="flex items-start gap-4 p-6 bg-gray-50 rounded-2xl border border-gray-50 hover:border-indigo-100 transition-all">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-1" />
+                        <span className="text-gray-700 text-base leading-relaxed font-medium">{resp}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
           </div>
-        </form>
+        </div>
+
+        <div className="lg:col-span-4">
+          <div className="sticky top-28 space-y-6">
+            <div className="bg-[#0f172a] rounded-[2rem] p-8 md:p-12 text-white shadow-xl relative overflow-hidden group">
+              <div className="absolute inset-0 opacity-10 pointer-events-none">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600 rounded-full blur-3xl" />
+              </div>
+
+              <h3 className="text-[10px] font-bold mb-8 border-b border-white/10 pb-6 uppercase tracking-[0.3em] text-indigo-400">Position Integrity</h3>
+
+              <div className="space-y-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 shadow-lg group-hover:bg-indigo-600 transition-all">
+                    <MapPin className="text-indigo-400 w-6 h-6 group-hover:text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-indigo-100/40 font-bold uppercase tracking-[0.3em] mb-1">HQ / Remote</p>
+                    <p className="text-lg font-bold tracking-tight">{job.location}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 shadow-lg group-hover:bg-emerald-600 transition-all">
+                    <DollarSign className="text-emerald-400 w-6 h-6 group-hover:text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-indigo-100/40 font-bold uppercase tracking-[0.3em] mb-1">Fiscal Package</p>
+                    <p className="text-lg font-bold tracking-tight">{job.salary}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 shadow-lg group-hover:bg-indigo-600 transition-all">
+                    <Target className="text-indigo-400 w-6 h-6 group-hover:text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-indigo-100/40 font-bold uppercase tracking-[0.3em] mb-1">Experience Index</p>
+                    <p className="text-lg font-bold tracking-tight">{job.experience}</p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={onApplyNow}
+                className="w-full mt-12 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold uppercase tracking-[0.2em] text-xs shadow-xl transition-all hover:-translate-y-1 active:scale-[0.98]"
+              >
+                Initiate Application
+              </button>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-100 rounded-[2rem] p-8 hover:shadow-lg transition-all">
+              <div className="flex items-center gap-3 text-gray-400 font-bold uppercase tracking-[0.3em] text-[10px] mb-4">
+                <Users className="w-4 h-4 text-indigo-600" />
+                Community Insight
+              </div>
+              <p className="text-gray-500 text-base leading-relaxed font-medium">
+                Join <span className="text-indigo-600 font-black">{job.applicants || 42} leading candidates</span> currently vying for this strategic role.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -455,17 +202,15 @@ function ApplicationForm({ job, onBack, onSuccess }) {
 
 // Main CareerPortal Component
 export default function CareerPortal() {
-  const [view, setView] = useState("listings");
+  const [searchParams] = useSearchParams();
   const [selectedJob, setSelectedJob] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  // State for filters and application form visibility
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [filters, setFilters] = useState({ type: "All Types", experience: "All Levels" });
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // Fetch jobs from API on component mount
   useEffect(() => {
     fetchJobs();
   }, []);
@@ -476,18 +221,16 @@ export default function CareerPortal() {
       setJobs(data);
     } catch (err) {
       console.error("Failed to load jobs:", err);
-      setError("Could not load job listings. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Filter jobs logic
   const filteredJobs = jobs.filter(job => {
     const matchesSearch =
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchTerm.toLowerCase()); // Added location search
+      job.location.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesType = filters.type === "All Types" || job.type === filters.type;
     const matchesExp = filters.experience === "All Levels" || job.experience === filters.experience;
@@ -497,21 +240,22 @@ export default function CareerPortal() {
 
   const handleApplyClick = (job) => {
     setSelectedJob(job);
-    setShowApplicationForm(true);
+    setShowApplicationForm(false);
   };
 
   const handleApplySuccess = () => {
-    alert("Application Submitted Successfully! We will review your profile.");
     setShowApplicationForm(false);
     setSelectedJob(null);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 5000);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#0f172a]">
         <div className="text-center">
-          <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-700">Loading Career Opportunities...</p>
+          <RefreshCw className="w-16 h-16 animate-spin text-indigo-600 mx-auto mb-10" />
+          <h2 className="text-white font-bold tracking-[0.5em] uppercase text-xs animate-pulse">Initializing Nexus...</h2>
         </div>
       </div>
     );
@@ -519,19 +263,21 @@ export default function CareerPortal() {
 
   if (showApplicationForm && selectedJob) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <ApplicationForm
-          job={selectedJob}
-          onBack={() => setShowApplicationForm(false)}
-          onSuccess={handleApplySuccess}
-        />
+      <div className="min-h-screen bg-white py-24 md:py-32 px-6 flex justify-center">
+        <div className="w-full max-w-4xl">
+          <ApplicationForm
+            job={selectedJob}
+            onBack={() => setShowApplicationForm(false)}
+            onSuccess={handleApplySuccess}
+          />
+        </div>
       </div>
     );
   }
 
   if (selectedJob) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-white py-24 md:py-32 px-6">
         <JobDetails
           job={selectedJob}
           onBack={() => setSelectedJob(null)}
@@ -542,25 +288,43 @@ export default function CareerPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Search Header */}
-      <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white py-16 px-4">
-        <div className="max-w-7xl mx-auto text-center space-y-6">
-          <h1 className="text-4xl md:text-5xl font-bold animate-fadeInDown">
-            Find Your Dream Career
+    <div className="min-h-screen bg-white font-['Plus_Jakarta_Sans'] overflow-hidden">
+      {/* Success Toast */}
+      {showSuccess && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] animate-fadeIn">
+          <div className="bg-[#0f172a] text-white px-8 py-4 rounded-xl shadow-2xl flex items-center gap-4 border border-indigo-500/30">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+            <span className="font-bold text-sm tracking-tight uppercase">Application Transmitted</span>
+          </div>
+        </div>
+      )}
+
+      {/* Expanded Search Header */}
+      <div className="relative bg-[#0f172a] text-white pt-32 pb-20 md:pt-40 md:pb-32 px-6 overflow-hidden text-center">
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-indigo-600 rounded-full blur-[150px]" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[80%] h-[80%] bg-blue-600 rounded-full blur-[150px]" />
+        </div>
+
+        <div className="max-w-[1440px] mx-auto relative z-10 space-y-8">
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[10px] font-bold uppercase tracking-[0.3em] text-indigo-400 backdrop-blur-xl animate-fadeIn">
+            Strategic Ecosystem
+          </div>
+          <h1 className="text-4xl md:text-7xl font-black tracking-tighter leading-[1.0] uppercase animate-fadeInDown">
+            Your Next <br className="hidden lg:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">Great Ascent.</span>
           </h1>
-          <p className="text-xl text-blue-100 max-w-2xl mx-auto animate-fadeInUp">
-            Explore opportunities that match your skills and aspirations.
+          <p className="text-lg md:text-xl text-indigo-100/70 max-w-3xl mx-auto font-medium animate-fadeInUp">
+            Discover technical opportunities at South India's most innovative technology companies. Bridge the gap between talent and global impact.
           </p>
 
-          <div className="max-w-3xl mx-auto mt-8 relative animate-fadeInUp" style={{ animationDelay: "0.2s" }}>
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <Search className="h-6 w-6 text-gray-400" />
+          <div className="max-w-2xl mx-auto mt-12 relative px-4 group">
+            <div className="absolute inset-y-0 left-8 flex items-center pointer-events-none transition-all group-focus-within:translate-x-1">
+              <Search className="h-5 w-5 text-indigo-400" />
             </div>
             <input
               type="text"
-              className="w-full pl-14 pr-6 py-4 rounded-full text-gray-900 bg-white placeholder-gray-500 shadow-xl focus:ring-4 focus:ring-blue-500/30 focus:outline-none transition-all text-lg"
-              placeholder="Search by job title, company, or keywords..."
+              className="w-full pl-16 pr-8 py-5 rounded-2xl text-white bg-white/5 backdrop-blur-3xl border-2 border-white/10 placeholder-gray-500 focus:bg-white focus:text-gray-900 focus:border-white transition-all text-lg font-bold shadow-2xl"
+              placeholder="Search for roles (e.g. Java, Python, AI Engineer)..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -568,57 +332,56 @@ export default function CareerPortal() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4 mb-8 pb-6 border-b border-gray-200">
-          <div className="flex items-center gap-2 text-gray-700 font-medium">
-            <Filter className="w-5 h-5" />
-            <span>Filters:</span>
+      <div className="max-w-[1440px] mx-auto px-6 py-20 md:py-28">
+        {/* Strategic Filters */}
+        <div className="flex flex-col lg:flex-row lg:items-center gap-8 mb-16 pb-8 border-b border-gray-100">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100">
+              <Filter className="w-6 h-6 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-1">Catalog Filters</p>
+              <p className="font-black text-gray-900 uppercase text-2xl tracking-tight">Refine Pulse</p>
+            </div>
           </div>
 
-          <div className="relative group">
-            <select
-              className="appearance-none bg-white border border-gray-300 rounded-full py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:border-blue-500 transition-colors"
-              value={filters.type}
-              onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
-            >
-              <option>All Types</option>
-              <option>Full-time</option>
-              <option>Part-time</option>
-              <option>Contract</option>
-              <option>Internship</option>
-            </select>
-            <ChevronRight className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-gray-500 pointer-events-none" />
+          <div className="flex flex-wrap gap-4">
+            {["type", "experience"].map(filterKey => (
+              <select
+                key={filterKey}
+                className="bg-white border-2 border-gray-100 rounded-xl py-4 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-900 outline-none focus:bg-white focus:border-indigo-600 transition-all cursor-pointer shadow-sm hover:shadow-lg hover:border-gray-200"
+                value={filters[filterKey]}
+                onChange={(e) => setFilters(prev => ({ ...prev, [filterKey]: e.target.value }))}
+              >
+                {filterKey === "type" ? (
+                  <>
+                    <option>All Types</option>
+                    <option>Full-time</option>
+                    <option>Part-time</option>
+                    <option>Contract</option>
+                  </>
+                ) : (
+                  <>
+                    <option>All Levels</option>
+                    <option>Fresher</option>
+                    <option>0-2 Years</option>
+                    <option>2-5 Years</option>
+                    <option>5+ Years</option>
+                  </>
+                )}
+              </select>
+            ))}
           </div>
 
-          <div className="relative group">
-            <select
-              className="appearance-none bg-white border border-gray-300 rounded-full py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:border-blue-500 transition-colors"
-              value={filters.experience}
-              onChange={(e) => setFilters(prev => ({ ...prev, experience: e.target.value }))}
-            >
-              <option>All Levels</option>
-              <option>Fresher</option>
-              <option>0-2 Years</option>
-              <option>2-5 Years</option>
-              <option>5+ Years</option>
-            </select>
-            <ChevronRight className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-gray-500 pointer-events-none" />
-          </div>
-
-          <div className="ml-auto text-sm text-gray-500">
-            Scanning <strong>{filteredJobs.length}</strong> available positions
+          <div className="lg:ml-auto text-right">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] mb-1">Current Opportunities</p>
+            <p className="font-black text-indigo-600 uppercase text-3xl tracking-tighter">{filteredJobs.length} Roles Identified</p>
           </div>
         </div>
 
-        {/* Jobs Grid */}
-        {error ? (
-          <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
-            <div className="text-red-500 mb-4 text-lg">{error}</div>
-            <button onClick={fetchJobs} className="btn btn-primary">Try Again</button>
-          </div>
-        ) : filteredJobs.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
+        {/* Dynamic Grid */}
+        {filteredJobs.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
             {filteredJobs.map((job, index) => (
               <JobCard
                 key={job.id}
@@ -629,17 +392,17 @@ export default function CareerPortal() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 bg-white rounded-2xl shadow-sm border border-dashed border-gray-300">
-            <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-10 h-10 text-gray-400" />
+          <div className="text-center py-24 md:py-32 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-100 px-6">
+            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg mx-auto mb-8">
+              <Search className="w-10 h-10 text-gray-200" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No jobs found</h3>
-            <p className="text-gray-500">Try adjusting your search or filters to find what you're looking for.</p>
+            <h3 className="text-3xl md:text-5xl font-black text-gray-900 mb-4 uppercase tracking-tight">Zero Matches.</h3>
+            <p className="text-lg text-gray-400 mb-10 max-w-xl mx-auto">Our strategic hub is currently mapping new opportunities. Broaden your filters to capture the next wave.</p>
             <button
               onClick={() => { setSearchTerm(""); setFilters({ type: "All Types", experience: "All Levels" }) }}
-              className="mt-4 btn btn-outline"
+              className="px-8 py-4 bg-gray-900 text-white rounded-xl font-bold uppercase tracking-[0.2em] text-[10px] shadow-xl hover:bg-indigo-600 transition-all hover:-translate-y-1"
             >
-              Clear Filters
+              Reset Search Protocol
             </button>
           </div>
         )}

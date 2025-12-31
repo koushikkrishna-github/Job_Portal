@@ -171,6 +171,13 @@ def apply_job():
         # Insert into MongoDB
         result = applications_collection.insert_one(application)
         
+        # Increment applicant count in the specific job document
+        # We match by Position name as it's the most reliable link in current data structure
+        jobs_collection.update_one(
+            {"title": form.get("position"), "status": "Active"},
+            {"$inc": {"applicants": 1}}
+        )
+        
         print(f"[SUCCESS] Application submitted - ID: {next_id}, Resume stored in GridFS: {file_id}")
         
         return jsonify({

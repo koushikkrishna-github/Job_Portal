@@ -1,131 +1,130 @@
-import { Building, Target, Award, Users, CheckCircle } from 'lucide-react';
+import { Building, Target, Award, Users, CheckCircle, Globe, TrendingUp, Shield, ArrowRight, Sparkles } from 'lucide-react';
 
 export default function About() {
     return (
-        <div className="flex flex-col">
-            {/* Header */}
-            <section className="bg-blue-600 py-20 text-white relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10 patterned-bg"></div>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-6">About Our Company</h1>
-                    <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-                        We are on a mission to revolutionize, by connecting exceptional talent with world-changing organizations through technology and human insight.
+        <div className="flex flex-col bg-white font-['Plus_Jakarta_Sans'] overflow-hidden">
+            {/* Expanded Immersive Hero */}
+            <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 bg-[#0f172a] text-white overflow-hidden text-center">
+                {/* Strategic Mesh Decoration */}
+                <div className="absolute inset-0 opacity-20 pointer-events-none">
+                    <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-indigo-600 rounded-full blur-[150px]" />
+                    <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-emerald-600 rounded-full blur-[150px]" />
+                </div>
+
+                <div className="max-w-[1440px] mx-auto px-6 relative z-10">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-500/10 text-indigo-400 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase border border-indigo-500/20 mb-6 backdrop-blur-xl animate-fadeIn">
+                        Corporate Intelligence
+                    </div>
+                    <h1 className="text-4xl md:text-7xl font-bold text-white tracking-tight leading-[1.0] mb-8 animate-fadeInDown">
+                        Orchestrating <br className="hidden lg:block" />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">Human Capital.</span>
+                    </h1>
+                    <p className="text-lg md:text-xl text-indigo-100/70 max-w-3xl mx-auto leading-relaxed font-medium animate-fadeInUp">
+                        Southern India's premier gateway for technology leaders. We don't just fill roles; we catalyze the growth of innovative ecosystems.
                     </p>
                 </div>
             </section>
 
-            {/* Our Story */}
-            <section className="py-24 bg-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid md:grid-cols-2 gap-16 items-center">
-                        <div>
-                            <img
-                                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                                alt="Team Meeting"
-                                className="rounded-2xl shadow-2xl"
-                            />
-                        </div>
-                        <div className="space-y-6">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-semibold">
-                                Since 2020
+            {/* Expansive Excellence Section */}
+            <section className="py-20 md:py-32 relative border-b border-gray-50">
+                <div className="max-w-[1440px] mx-auto px-6">
+                    <div className="grid lg:grid-cols-2 gap-16 md:gap-24 items-center">
+                        <div className="relative group">
+                            <div className="absolute -inset-4 bg-indigo-500/5 rounded-[2rem] blur-2xl transition-all group-hover:bg-indigo-500/10" />
+                            <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] shadow-2xl">
+                                <img
+                                    src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                                    alt="Nexus Strategy Lab"
+                                    className="w-full h-full object-cover grayscale brightness-90 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a]/80 to-transparent opacity-60" />
                             </div>
-                            <h2 className="text-4xl font-bold text-gray-900">Pioneering the Future of Work</h2>
-                            <p className="text-lg text-gray-600 leading-relaxed">
-                                Founded with a vision to simplify the complex world of recruitment, JobPortal has grown from a small startup to a global leader in talent acquisition solutions. We believe that the right job can change a person's life, and the right person can transform a business.
-                            </p>
-                            <p className="text-lg text-gray-600 leading-relaxed">
-                                Our technology-driven approach, combined with deep industry expertise, allows us to make matches that last. We are more than just a job board; we are career partners for candidates and growth partners for businesses.
-                            </p>
 
-                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 pt-6">
-                                <div className="p-3 bg-gray-50 rounded-xl">
-                                    <p className="text-2xl font-bold text-blue-600 mb-1">20+</p>
-                                    <p className="text-xs text-gray-600">States in India</p>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-xl">
-                                    <p className="text-2xl font-bold text-blue-600 mb-1">500+</p>
-                                    <p className="text-xs text-gray-600">Companies</p>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-xl">
-                                    <p className="text-2xl font-bold text-blue-600 mb-1">25k+</p>
-                                    <p className="text-xs text-gray-600">Received</p>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-xl">
-                                    <p className="text-2xl font-bold text-blue-600 mb-1">20k+</p>
-                                    <p className="text-xs text-gray-600">Processed</p>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-xl">
-                                    <p className="text-2xl font-bold text-blue-600 mb-1">3k+</p>
-                                    <p className="text-xs text-gray-600">Shortlisted</p>
-                                </div>
-                                <div className="p-3 bg-gray-50 rounded-xl">
-                                    <p className="text-2xl font-bold text-blue-600 mb-1">1.8k+</p>
-                                    <p className="text-xs text-gray-600">Placed</p>
+                            {/* Floating Achievement Badge */}
+                            <div className="absolute -bottom-8 -right-8 bg-white p-6 rounded-2xl shadow-xl border border-gray-100 hidden md:block animate-bounce-subtle">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                                        <Award className="w-5 h-5 text-emerald-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Industry Standard</p>
+                                        <p className="text-base font-bold text-gray-900 tracking-tight">ISO-9001 Certified</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
 
-            {/* Mission & Vision */}
-            <section className="py-24 bg-gray-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div className="bg-white p-10 rounded-2xl shadow-lg relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <Target className="w-32 h-32 text-blue-600" />
+                        <div className="space-y-8">
+                            <div className="space-y-4">
+                                <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight leading-[1.1]">
+                                    The Nexus <span className="text-indigo-600">Protocol.</span>
+                                </h2>
+                                <p className="text-lg text-gray-500 leading-relaxed font-medium">
+                                    Founded in 2020 by a consortium of engineering visionaries, Nexus was architected to bridge the profound gap between high-velocity technical demand and strategic talent acquisition.
+                                </p>
                             </div>
-                            <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-6">
-                                <Target className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                To empower professionals to reach their full potential and enable organizations to build high-performing, diverse teams that drive innovation and success in the global economy.
-                            </p>
-                        </div>
 
-                        <div className="bg-white p-10 rounded-2xl shadow-lg relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <Building className="w-32 h-32 text-purple-600" />
+                            <div className="grid sm:grid-cols-2 gap-8 pt-8 border-t border-gray-100">
+                                <div className="space-y-2">
+                                    <p className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter">500+</p>
+                                    <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em]">Strategic Partners</p>
+                                    <p className="text-xs text-gray-400 leading-relaxed">Top-tier tech giants to agile unicorn startups.</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter">1.8k+</p>
+                                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em]">High-Impact Hires</p>
+                                    <p className="text-xs text-gray-400 leading-relaxed">Orchestrating careers that define markets.</p>
+                                </div>
                             </div>
-                            <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-6">
-                                <Building className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                To be the world's most trusted and effective talent platform, creating a future where every individual has access to meaningful work and every company can find the talent they need to thrive.
-                            </p>
+
+                            <button className="flex items-center gap-3 px-8 py-4 bg-gray-900 text-white rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-indigo-600 transition-all shadow-lg hover:-translate-y-1">
+                                Our Methodology <ArrowRight className="w-4 h-4" />
+                            </button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Core Values */}
-            <section className="py-24 bg-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Core Values</h2>
-                        <p className="text-gray-600 max-w-2xl mx-auto">These principles guide every decision we make and every interaction we have.</p>
+            {/* Strategic Pillars Section */}
+            <section className="py-20 md:py-32 bg-gray-50 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-32 opacity-[0.03] select-none pointer-events-none">
+                    <Target className="w-[400px] h-[400px]" />
+                </div>
+
+                <div className="max-w-[1440px] mx-auto px-6 relative z-10">
+                    <div className="max-w-3xl mb-16 md:mb-20">
+                        <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight mb-6">Strategic <span className="text-indigo-600">Pillars.</span></h2>
+                        <p className="text-lg text-gray-500 leading-relaxed font-medium">How we maintain the Nexus standard across India's most complex technical terrains.</p>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-8">
+                    <div className="grid md:grid-cols-3 gap-8 md:gap-10">
                         {[
-                            { title: "Integrity First", desc: "We operate with transparency, honesty, and ethical standards in all aspects of our business." },
-                            { title: "People Centric", desc: "We prioritize the needs and well-being of our candidates, clients, and employees above all else." },
-                            { title: "Innovation", desc: "We constantly push boundaries and seek new ways to solve complex recruitment challenges." },
-                            { title: "Excellence", desc: "We strive for the highest quality in our services, technology, and support." },
-                            { title: "Inclusion", desc: "We champion diversity and work to create equitable opportunities for everyone." },
-                            { title: "Collaboration", desc: "We believe we are stronger together and foster a culture of teamwork and shared success." }
-                        ].map((value, idx) => (
-                            <div key={idx} className="flex gap-4 p-6 rounded-xl hover:bg-gray-50 transition-colors">
-                                <div className="flex-shrink-0 mt-1">
-                                    <CheckCircle className="w-6 h-6 text-green-500" />
+                            {
+                                title: "Candidate-Centricity",
+                                icon: Users,
+                                color: "text-indigo-600",
+                                desc: "We prioritize your professional trajectory and long-term equity, not just immediate placement metrics."
+                            },
+                            {
+                                title: "Technical Integrity",
+                                icon: Shield,
+                                color: "text-emerald-600",
+                                desc: "No jargon, no fluff. Our engineers vet your vision before we connect you to decision makers."
+                            },
+                            {
+                                title: "Regional Sovereignty",
+                                icon: Globe,
+                                color: "text-blue-600",
+                                desc: "Deep-seated influence across Hyderabad, Bangalore, and Chennai technology hubs."
+                            }
+                        ].map((item, i) => (
+                            <div key={i} className="group relative bg-white p-8 md:p-10 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                <div className={`w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                                    <item.icon className={`w-6 h-6 ${item.color}`} />
                                 </div>
-                                <div>
-                                    <h4 className="text-lg font-bold text-gray-900 mb-2">{value.title}</h4>
-                                    <p className="text-gray-600 text-sm">{value.desc}</p>
-                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">{item.title}</h3>
+                                <p className="text-sm text-gray-500 leading-relaxed mb-6">{item.desc}</p>
+                                <div className="w-8 h-1 bg-gray-100 rounded-full group-hover:w-full group-hover:bg-indigo-600 transition-all duration-500" />
                             </div>
                         ))}
                     </div>
