@@ -3,13 +3,13 @@ import { useSearchParams } from "react-router-dom";
 import {
   Briefcase, MapPin, Clock, DollarSign, ChevronRight, ArrowLeft,
   Users, Search, Filter, Sparkles, TrendingUp, Award, Target,
-  CheckCircle2, Upload, X, FileText, Calendar, Building2, RefreshCw, ArrowRight, Shield
+  CheckCircle2, Upload, X, FileText, Calendar, Building2, RefreshCw, ArrowRight, Shield, Share2
 } from "lucide-react";
 import { applyJob, getJobs } from "../api";
 import ApplicationForm from "../components/ApplicationForm";
 
 // JobCard Component
-function JobCard({ job, onApply, index }) {
+function JobCard({ job, onApply, onShare, index }) {
   return (
     <div
       className="group relative bg-white border border-gray-100 rounded-[2rem] p-6 md:p-8 hover:border-indigo-200 transition-all duration-500 hover:shadow-xl cursor-pointer animate-fadeInUp animate-fill-both"
@@ -29,6 +29,13 @@ function JobCard({ job, onApply, index }) {
             {job.company}
           </p>
         </div>
+        <button
+          onClick={(e) => onShare(e, `/jobs/${job.id}`)}
+          className="text-gray-300 hover:text-indigo-600 transition-colors p-2 -mr-2"
+          title="Share Job"
+        >
+          <Share2 className="w-5 h-5" />
+        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-6 mb-8">
@@ -69,7 +76,7 @@ function JobCard({ job, onApply, index }) {
 }
 
 // JobDetails Component
-function JobDetails({ job, onBack, onApplyNow }) {
+function JobDetails({ job, onBack, onApplyNow, onShare }) {
   return (
     <div className="max-w-[1440px] mx-auto animate-fadeIn font-['Plus_Jakarta_Sans']">
       <button
@@ -96,9 +103,14 @@ function JobDetails({ job, onBack, onApplyNow }) {
                 <p className="text-lg text-indigo-500 font-bold uppercase tracking-[0.3em]">{job.company}</p>
               </div>
               <div className="flex flex-col md:items-end gap-4">
-                <span className="px-6 py-2 bg-[#0f172a] text-white rounded-xl text-[10px] font-bold uppercase tracking-[0.3em] shadow-lg">
-                  {job.type}
-                </span>
+                <div className="flex items-center gap-3">
+                  <button onClick={(e) => onShare(e, `/jobs/${job.id}`)} className="p-2 text-gray-400 hover:text-indigo-600 transition-colors bg-gray-50 hover:bg-indigo-50 rounded-xl" title="Share Job">
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                  <span className="px-6 py-2 bg-[#0f172a] text-white rounded-xl text-[10px] font-bold uppercase tracking-[0.3em] shadow-lg">
+                    {job.type}
+                  </span>
+                </div>
                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-2">
                   <Clock className="w-3.5 h-3.5 text-indigo-400" />
                   Indexed: {job.postedDate || "24h ago"}
@@ -210,6 +222,19 @@ export default function CareerPortal() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showShareToast, setShowShareToast] = useState(false);
+
+  const handleShare = async (e, path) => {
+    try {
+      e?.stopPropagation();
+      const url = path ? `${window.location.origin}${path}` : window.location.href;
+      await navigator.clipboard.writeText(url);
+      setShowShareToast(true);
+      setTimeout(() => setShowShareToast(false), 3000);
+    } catch (err) {
+      console.error("Failed to copy link", err);
+    }
+  };
 
   useEffect(() => {
     fetchJobs();
@@ -282,6 +307,7 @@ export default function CareerPortal() {
           job={selectedJob}
           onBack={() => setSelectedJob(null)}
           onApplyNow={() => setShowApplicationForm(true)}
+          onShare={handleShare}
         />
       </div>
     );
@@ -295,6 +321,16 @@ export default function CareerPortal() {
           <div className="bg-[#0f172a] text-white px-8 py-4 rounded-xl shadow-2xl flex items-center gap-4 border border-indigo-500/30">
             <CheckCircle2 className="w-5 h-5 text-emerald-400" />
             <span className="font-bold text-sm tracking-tight uppercase">Application Transmitted</span>
+          </div>
+        </div>
+      )}
+
+      {/* Share Toast */}
+      {showShareToast && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] animate-fadeIn">
+          <div className="bg-[#0f172a] text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-indigo-500/30">
+            <Share2 className="w-5 h-5 text-indigo-400" />
+            <span className="font-bold text-sm tracking-tight uppercase">Link Copied to Clipboard</span>
           </div>
         </div>
       )}
@@ -388,6 +424,7 @@ export default function CareerPortal() {
                 job={job}
                 index={index}
                 onApply={handleApplyClick}
+                onShare={handleShare}
               />
             ))}
           </div>

@@ -31,12 +31,12 @@ export default function Home() {
                         </div>
 
                         <h1 className="text-4xl md:text-7xl font-black tracking-tighter leading-[1.0] animate-fadeInDown">
-                            The Nexus of <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">Innovation.</span>
+                            The Premier Ecosystem for <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">Verified Talent & Opportunity.</span>
                         </h1>
 
                         <p className="text-lg md:text-xl text-indigo-100/70 max-w-3xl leading-relaxed font-medium animate-fadeInUp">
-                            Connecting elite engineering talent with the architectural visionaries of South India's premier technical ecosystems.
+                            Eliminate uncertainty. Connect with vetted enterprises and pre-screened professionals in South India's only assured recruitment network.
                         </p>
 
                         <div className="max-w-2xl w-full mt-10 group">
@@ -66,10 +66,10 @@ export default function Home() {
 
                         <div className="pt-16 grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-24">
                             {[
-                                { label: "Technical Domains", val: "15+" },
-                                { label: "Strategic Partners", val: "120+" },
-                                { label: "Placement Velocity", val: "94%" },
-                                { label: "Talent Pool", val: "15k+" }
+                                { label: "Verified Partners", val: "500+" },
+                                { label: "Active Roles", val: "12k+" },
+                                { label: "Placement Success", val: "98%" },
+                                { label: "Secure Placements", val: "25k+" }
                             ].map((stat, i) => (
                                 <div key={i} className="text-center group">
                                     <p className="text-3xl font-black text-white mb-1 group-hover:text-indigo-400 transition-colors">{stat.val}</p>
@@ -81,8 +81,84 @@ export default function Home() {
                 </div>
             </section>
 
+            {/* The Trust Standard */}
+            <section className="py-24 bg-gray-50 border-b border-gray-100">
+                <div className="max-w-[1440px] mx-auto px-6">
+                    <div className="text-center max-w-3xl mx-auto mb-16">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100/50 rounded-full mb-4">
+                            <Shield className="w-3 h-3 text-emerald-600" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">The Nexus Protocol</span>
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter mb-6">Built on <span className="text-indigo-600">Uncompromising Trust.</span></h2>
+                        <p className="text-gray-500 font-medium leading-relaxed">
+                            We don't just list jobs. We architect a secure ecosystem where every participant is verified, ensuring zero fraud and maximum relevance.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-8 relative z-10">
+                        {[
+                            { title: "Verified Enterprises", desc: "Every company is subjected to a rigorous 14-point corporate audit before accessing our talent pool.", icon: Building2 },
+                            { title: "Vetted Professionals", desc: "Candidates undergo algorithmic and manual screening to validate skills and experience authenticity.", icon: Briefcase },
+                            { title: "Assured Recruitment", desc: "Our 'Placement Guarantee' ensures all offers made through Nexus are legally binding and secure.", icon: Shield },
+                        ].map((item, i) => (
+                            <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                                <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition-colors">
+                                    <item.icon className="w-6 h-6 text-indigo-600 group-hover:text-white transition-colors" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
+                                <p className="text-sm text-gray-500 leading-relaxed font-medium">{item.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Connected Ecosystem */}
+            <section className="py-20 bg-white overflow-hidden relative">
+                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent" />
+                <div className="max-w-[1440px] mx-auto px-6">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-12">
+                        <div className="max-w-xl space-y-6">
+                            <h2 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">The Unified <span className="text-indigo-600">Grid.</span></h2>
+                            <p className="text-lg text-gray-500 font-medium leading-relaxed">
+                                Nexus isn't just a portal; it's a synchronized grid connecting the four pillars of recruitment.
+                            </p>
+                            <ul className="space-y-4 pt-4">
+                                {[
+                                    "Enterprise Architects (Recruiters)",
+                                    "Talent Operations (HR)",
+                                    "Visionary Founders (Companies)",
+                                    "Elite Engineers (Candidates)"
+                                ].map((role, i) => (
+                                    <li key={i} className="flex items-center gap-3">
+                                        <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
+                                            <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                                        </div>
+                                        <span className="text-sm font-bold text-gray-700 uppercase tracking-widest">{role}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Abstract Connectivity Visual */}
+                        <div className="relative flex-1 w-full max-w-lg aspect-square flex items-center justify-center">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-50 to-emerald-50 rounded-full blur-3xl opacity-50" />
+                            <div className="relative z-10 grid grid-cols-2 gap-4">
+                                {[Building2, Briefcase, Zap, Globe].map((Icon, i) => (
+                                    <div key={i} className="w-24 h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center animate-float" style={{ animationDelay: `${i * 0.2}s` }}>
+                                        <Icon className="w-8 h-8 text-indigo-600" />
+                                    </div>
+                                ))}
+                            </div>
+                            {/* Connecting Lines (CSS only representation) */}
+                            <div className="absolute inset-0 border-2 border-dashed border-indigo-100 rounded-full animate-spin-slow pointer-events-none" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Strategic Verticals */}
-            <section className="py-24 md:py-32 bg-white">
+            <section className="py-24 md:py-32 bg-gray-50/50">
                 <div className="max-w-[1440px] mx-auto px-6">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-16">
                         <div className="max-w-2xl space-y-4">
@@ -129,13 +205,13 @@ export default function Home() {
                                     to="/find-jobs"
                                     className="w-full md:w-auto px-10 py-5 bg-white text-[#0f172a] rounded-xl font-black uppercase tracking-[0.1em] text-[10px] shadow-xl hover:bg-indigo-50 transition-all hover:-translate-y-1"
                                 >
-                                    Explore Protocol
+                                    Start Verification
                                 </Link>
                                 <Link
                                     to="/contact"
                                     className="w-full md:w-auto px-10 py-5 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase tracking-[0.1em] text-[10px] backdrop-blur-md hover:bg-white/10 transition-all hover:-translate-y-1"
                                 >
-                                    Strategic Inquiry
+                                    Partner With Us
                                 </Link>
                             </div>
                         </div>

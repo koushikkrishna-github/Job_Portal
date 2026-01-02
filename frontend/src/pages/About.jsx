@@ -60,20 +60,20 @@ export default function About() {
                                     The Nexus <span className="text-indigo-600">Protocol.</span>
                                 </h2>
                                 <p className="text-lg text-gray-500 leading-relaxed font-medium">
-                                    Founded in 2020 by a consortium of engineering visionaries, Nexus was architected to bridge the profound gap between high-velocity technical demand and strategic talent acquisition.
+                                    Founded in 2020, Nexus was architected to eliminate uncertainty in recruitment. We enforce a zero-tolerance policy for fraudulent listings and unverified candidates, creating the only secure ecosystem in the region.
                                 </p>
                             </div>
 
                             <div className="grid sm:grid-cols-2 gap-8 pt-8 border-t border-gray-100">
                                 <div className="space-y-2">
                                     <p className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter">500+</p>
-                                    <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em]">Strategic Partners</p>
-                                    <p className="text-xs text-gray-400 leading-relaxed">Top-tier tech giants to agile unicorn startups.</p>
+                                    <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em]">Verified Enterprises</p>
+                                    <p className="text-xs text-gray-400 leading-relaxed">Fully audited corporate partners.</p>
                                 </div>
                                 <div className="space-y-2">
-                                    <p className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter">1.8k+</p>
-                                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em]">High-Impact Hires</p>
-                                    <p className="text-xs text-gray-400 leading-relaxed">Orchestrating careers that define markets.</p>
+                                    <p className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter">99.9%</p>
+                                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em]">Safety Record</p>
+                                    <p className="text-xs text-gray-400 leading-relaxed">Zero reported recruitment fraud.</p>
                                 </div>
                             </div>
 
@@ -93,29 +93,29 @@ export default function About() {
 
                 <div className="max-w-[1440px] mx-auto px-6 relative z-10">
                     <div className="max-w-3xl mb-16 md:mb-20">
-                        <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight mb-6">Strategic <span className="text-indigo-600">Pillars.</span></h2>
-                        <p className="text-lg text-gray-500 leading-relaxed font-medium">How we maintain the Nexus standard across India's most complex technical terrains.</p>
+                        <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight mb-6">Trust <span className="text-indigo-600">Architecture.</span></h2>
+                        <p className="text-lg text-gray-500 leading-relaxed font-medium">The three pillars that make Nexus the safest recruitment ecosystem in India.</p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8 md:gap-10">
                         {[
                             {
-                                title: "Candidate-Centricity",
-                                icon: Users,
-                                color: "text-indigo-600",
-                                desc: "We prioritize your professional trajectory and long-term equity, not just immediate placement metrics."
-                            },
-                            {
-                                title: "Technical Integrity",
+                                title: "Identity Assurance",
                                 icon: Shield,
-                                color: "text-emerald-600",
-                                desc: "No jargon, no fluff. Our engineers vet your vision before we connect you to decision makers."
+                                color: "text-indigo-600",
+                                desc: "Every candidate profile is verified against academic and professional databases to prevent misrepresentation."
                             },
                             {
-                                title: "Regional Sovereignty",
-                                icon: Globe,
+                                title: "Corporate Vetting",
+                                icon: Building,
+                                color: "text-emerald-600",
+                                desc: "We perform 14-point audits on all partner companies to ensure financial health and workplace safety."
+                            },
+                            {
+                                title: "Fraud Protection",
+                                icon: CheckCircle,
                                 color: "text-blue-600",
-                                desc: "Deep-seated influence across Hyderabad, Bangalore, and Chennai technology hubs."
+                                desc: "Our algorithmic watchdogs eliminate 99.9% of fake listings and consultancy scams instantly."
                             }
                         ].map((item, i) => (
                             <div key={i} className="group relative bg-white p-8 md:p-10 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">

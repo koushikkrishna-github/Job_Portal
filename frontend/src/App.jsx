@@ -32,6 +32,7 @@ function App() {
         <Route path="/services" element={<Layout><Services /></Layout>} />
         <Route path="/contact" element={<Layout><Contact /></Layout>} />
         <Route path="/find-jobs" element={<Layout><FindJobs /></Layout>} />
+        <Route path="/jobs/:jobId" element={<Layout><FindJobs /></Layout>} />
         <Route path="/careers" element={<Layout><CareerPortal /></Layout>} />
 
         {/* Admin Routes (Standalone Layout) */}

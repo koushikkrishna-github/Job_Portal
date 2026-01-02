@@ -1,18 +1,19 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
     Search, Briefcase, MapPin, Sparkles, TrendingUp,
     ArrowRight, Code2, Database, Shield, Globe,
     Cpu, Users, Filter, Star, RefreshCw, CheckCircle2,
     GraduationCap, Calendar, Zap, Layout, X,
     Clock, Info, Target, ListChecks, Gem,
-    DollarSign, Compass, Rocket
+    DollarSign, Compass, Rocket, Share2
 } from "lucide-react";
 import { getJobs } from "../api";
 import ApplicationForm from "../components/ApplicationForm";
 
 export default function FindJobs() {
     const navigate = useNavigate();
+    const { jobId } = useParams();
     const matchedSectionRef = useRef(null);
 
     // Core States
@@ -34,10 +35,35 @@ export default function FindJobs() {
     const [applyingJob, setApplyingJob] = useState(null);
     const [viewingJob, setViewingJob] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [showShareToast, setShowShareToast] = useState(false);
+
+    const handleShare = async (e, path) => {
+        try {
+            e?.stopPropagation();
+            const url = path ? `${window.location.origin}${path}` : window.location.href;
+            await navigator.clipboard.writeText(url);
+            setShowShareToast(true);
+            setTimeout(() => setShowShareToast(false), 3000);
+        } catch (err) {
+            console.error("Failed to copy link", err);
+        }
+    };
 
     useEffect(() => {
         fetchJobs();
     }, []);
+
+    // Deep Linking Effect
+    useEffect(() => {
+        if (jobId && jobs.length > 0) {
+            const linkedJob = jobs.find(j => j.id.toString() === jobId);
+            if (linkedJob) {
+                setViewingJob(linkedJob);
+            }
+        } else {
+            setViewingJob(null);
+        }
+    }, [jobId, jobs]);
 
     const fetchJobs = async () => {
         try {
@@ -121,6 +147,16 @@ export default function FindJobs() {
                     <div className="bg-[#0f172a] text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-indigo-500/30">
                         <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                         <span className="font-bold text-sm tracking-tight uppercase">Application Transmitted</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Share Toast */}
+            {showShareToast && (
+                <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] animate-fadeIn">
+                    <div className="bg-[#0f172a] text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-indigo-500/30">
+                        <Share2 className="w-5 h-5 text-indigo-400" />
+                        <span className="font-bold text-sm tracking-tight uppercase">Link Copied to Clipboard</span>
                     </div>
                 </div>
             )}
@@ -227,11 +263,22 @@ export default function FindJobs() {
                                         <div className="flex-1">
                                             <div className="flex justify-between items-start mb-3">
                                                 <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">{job.title}</h3>
-                                                <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-widest">{job.type}</span>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-widest">{job.type}</span>
+                                                    <button onClick={(e) => handleShare(e, `/jobs/${job.id}`)} className="text-gray-300 hover:text-indigo-600 transition-colors" title="Share Job">
+                                                        <Share2 className="w-5 h-5" />
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-6">{job.company}</p>
+                                            <div className="flex items-center gap-2 mb-6">
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">{job.company}</p>
+                                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 rounded border border-blue-100" title="Verified Employer">
+                                                    <CheckCircle2 className="w-3 h-3 text-blue-500" />
+                                                    <span className="text-[8px] font-bold text-blue-600 uppercase tracking-wider">Verified</span>
+                                                </div>
+                                            </div>
                                             <div className="grid grid-cols-2 gap-3">
-                                                <button onClick={() => setViewingJob(job)} className="py-4 bg-gray-50 text-gray-900 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-gray-100 transition-all">Details</button>
+                                                <button onClick={() => navigate(`/jobs/${job.id}`)} className="py-4 bg-gray-50 text-gray-900 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-gray-100 transition-all">Details</button>
                                                 <button onClick={() => setApplyingJob(job)} className="py-4 bg-[#0f172a] text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-600 transition-all shadow-lg">Apply Now</button>
                                             </div>
                                         </div>
@@ -282,18 +329,28 @@ export default function FindJobs() {
             {/* Modals */}
             {(applyingJob || viewingJob) && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 md:p-12">
-                    <div className="absolute inset-0 bg-[#0f172a]/95 backdrop-blur-3xl" onClick={() => { setApplyingJob(null); setViewingJob(null); }} />
+                    <div className="absolute inset-0 bg-[#0f172a]/95 backdrop-blur-3xl" onClick={() => { setApplyingJob(null); navigate('/find-jobs'); }} />
                     <div className="relative w-full max-w-5xl bg-white rounded-[3rem] shadow-2xl z-10 overflow-hidden">
-                        <button onClick={() => { setApplyingJob(null); setViewingJob(null); }} className="absolute top-10 right-10 p-4 bg-gray-50 rounded-full text-gray-400"><X className="w-8 h-8" /></button>
-                        {viewingJob && (
+                        <div className="absolute top-10 right-10 flex gap-4">
+                            <button onClick={handleShare} className="p-4 bg-gray-50 rounded-full text-indigo-600 hover:bg-indigo-50 transition-all"><Share2 className="w-6 h-6" /></button>
+                            <button onClick={() => { setApplyingJob(null); navigate('/find-jobs'); }} className="p-4 bg-gray-50 rounded-full text-gray-400 hover:text-gray-900 transition-all"><X className="w-6 h-6" /></button>
+                        </div>
+                        {viewingJob && !applyingJob && (
                             <div className="p-12 md:p-20 overflow-y-auto max-h-[90vh]">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <span className="px-3 py-1 bg-gray-100 text-gray-500 rounded-full text-[10px] font-mono tracking-widest">REF: {viewingJob.id}</span>
+                                    <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-widest">{viewingJob.type}</span>
+                                </div>
                                 <h2 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tighter uppercase mb-6">{viewingJob.title}</h2>
                                 <div className="flex flex-wrap gap-10 text-sm font-bold text-gray-400 uppercase tracking-widest mb-16">
-                                    <span className="text-indigo-600">@ {viewingJob.company}</span>
+                                    <div className="flex items-center gap-2 text-indigo-600">
+                                        <span>@ {viewingJob.company}</span>
+                                        <CheckCircle2 className="w-4 h-4 text-blue-500" />
+                                    </div>
                                     <span className="flex items-center gap-2"><MapPin className="w-5 h-5" /> {viewingJob.location}</span>
                                 </div>
                                 <p className="text-xl text-gray-500 leading-relaxed font-medium mb-16">{viewingJob.description}</p>
-                                <button onClick={() => { setApplyingJob(viewingJob); setViewingJob(null); }} className="w-full py-8 bg-[#0f172a] text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs shadow-2xl hover:bg-indigo-600 transition-all">Initiate Application Protocol</button>
+                                <button onClick={() => setApplyingJob(viewingJob)} className="w-full py-8 bg-[#0f172a] text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs shadow-2xl hover:bg-indigo-600 transition-all">Initiate Application Protocol</button>
                             </div>
                         )}
                         {applyingJob && (

@@ -64,7 +64,13 @@ export default function Layout({ children }) {
                             </div>
                             <div className="flex flex-col">
                                 <span className={`text-xl md:text-2xl font-bold leading-none tracking-tight transition-all duration-500 ${scrolled ? 'text-[#0f172a]' : 'text-white'}`} style={!scrolled ? { textShadow: '0 2px 10px rgba(0,0,0,0.3)' } : {}}>NEXUS</span>
-                                <span className={`text-[10px] font-bold tracking-[0.2em] uppercase mt-1 transition-all duration-500 ${scrolled ? 'text-indigo-600' : 'text-indigo-400'}`} style={!scrolled ? { textShadow: '0 2px 10px rgba(0,0,0,0.3)' } : {}}>Solutions</span>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-500 ${scrolled ? 'text-indigo-600' : 'text-indigo-400'}`} style={!scrolled ? { textShadow: '0 2px 10px rgba(0,0,0,0.3)' } : {}}>Solutions</span>
+                                    <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/20 backdrop-blur-md rounded border border-emerald-500/30">
+                                        <Shield className="w-2 h-2 text-emerald-400" />
+                                        <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">Verified</span>
+                                    </div>
+                                </div>
                             </div>
                         </Link>
 
@@ -228,10 +234,30 @@ export default function Layout({ children }) {
                     </div>
 
                     {/* Security & Registry Baseline */}
+                    {/* Security & Registry Baseline */}
                     <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-                        <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest">
-                            &copy; {new Date().getFullYear()} NEXUS Staffing Solutions.
-                        </p>
+                        <div className="flex flex-col gap-2">
+                            <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest">
+                                &copy; {new Date().getFullYear()} NEXUS Staffing Solutions.
+                            </p>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-1.5 opacity-50 hover:opacity-100 transition-opacity cursor-help" title="ISO 27001 Certified">
+                                    <Shield className="w-3 h-3 text-emerald-500" />
+                                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">ISO 27001</span>
+                                </div>
+                                <div className="w-px h-3 bg-white/10" />
+                                <div className="flex items-center gap-1.5 opacity-50 hover:opacity-100 transition-opacity cursor-help" title="GDPR Compliant">
+                                    <Building2 className="w-3 h-3 text-emerald-500" />
+                                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">GDPR Ready</span>
+                                </div>
+                                <div className="w-px h-3 bg-white/10" />
+                                <div className="flex items-center gap-1.5 opacity-50 hover:opacity-100 transition-opacity cursor-help" title="SSL Encrypted">
+                                    <Shield className="w-3 h-3 text-emerald-500" />
+                                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">256-Bit SSL</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="flex items-center gap-8">
                             <Link to="/admin/login" className="flex items-center gap-2 text-gray-600 hover:text-emerald-400 transition-all">
                                 <Shield className="w-3.5 h-3.5" />
