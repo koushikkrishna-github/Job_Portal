@@ -84,7 +84,7 @@ def serialize_doc(doc):
 
 # ============ PUBLIC ROUTES (No Authentication) ============
 
-@app.route("/health", methods=["GET"])
+@app.route("/api/health", methods=["GET"])
 def health():
     try:
         client.server_info()
@@ -108,7 +108,7 @@ def health():
             "error": str(e)
         }), 500
 
-@app.route("/apply", methods=["POST"])
+@app.route("/api/apply", methods=["POST"])
 def apply_job():
     try:
         form = request.form
@@ -192,7 +192,7 @@ def apply_job():
 
 # ============ JOB ROUTES (PUBLIC) ============
 
-@app.route("/jobs", methods=["GET"])
+@app.route("/api/jobs", methods=["GET"])
 def get_jobs():
     """Public route - Get all active jobs for career portal"""
     try:
@@ -217,7 +217,7 @@ def get_jobs():
         print(f"Error fetching jobs: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/jobs/<int:job_id>", methods=["GET"])
+@app.route("/api/jobs/<int:job_id>", methods=["GET"])
 def get_job_by_id(job_id):
     """Public route - Get single job details"""
     try:
@@ -235,7 +235,7 @@ def get_job_by_id(job_id):
 
 # ============ ADMIN LOGIN ROUTE ============
 
-@app.route("/admin/login", methods=["POST"])
+@app.route("/api/admin/login", methods=["POST"])
 def admin_login():
     try:
         data = request.json
@@ -267,7 +267,7 @@ def admin_login():
 
 # ============ PROTECTED ADMIN ROUTES - APPLICATIONS ============
 
-@app.route("/admin/applications", methods=["GET"])
+@app.route("/api/admin/applications", methods=["GET"])
 @token_required
 def get_applications():
     try:
@@ -291,7 +291,7 @@ def get_applications():
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/admin/statistics", methods=["GET"])
+@app.route("/api/admin/statistics", methods=["GET"])
 @token_required
 def get_statistics():
     try:
@@ -345,7 +345,7 @@ def get_statistics():
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/admin/application/<int:app_id>/status", methods=["PUT"])
+@app.route("/api/admin/application/<int:app_id>/status", methods=["PUT"])
 @token_required
 def update_status(app_id):
     try:
@@ -372,7 +372,7 @@ def update_status(app_id):
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/admin/application/<int:app_id>", methods=["DELETE"])
+@app.route("/api/admin/application/<int:app_id>", methods=["DELETE"])
 @token_required
 def delete_application(app_id):
     try:
@@ -399,7 +399,7 @@ def delete_application(app_id):
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/admin/download-excel", methods=["GET"])
+@app.route("/api/admin/download-excel", methods=["GET"])
 @token_required
 def admin_download_excel():
     try:
@@ -477,7 +477,7 @@ def admin_download_excel():
 
 # ============ RESUME SERVING ROUTES (GridFS) ============
 
-@app.route('/uploads/resumes/<filename>')
+@app.route('/api/uploads/resumes/<filename>')
 def serve_resume(filename):
     """Serve resume files from GridFS (Protected route)"""
     try:
@@ -519,7 +519,7 @@ def serve_resume(filename):
         print(f"Error serving resume: {str(e)}")
         return jsonify({'error': 'Failed to serve resume'}), 500
 
-@app.route('/admin/download-resume/<filename>')
+@app.route('/api/admin/download-resume/<filename>')
 @token_required
 def download_resume(filename):
     """Download resume file from GridFS (Protected route)"""
@@ -555,7 +555,7 @@ def download_resume(filename):
         print(f"Error downloading resume: {str(e)}")
         return jsonify({'error': 'Failed to download resume'}), 500
 
-@app.route('/admin/view-resume/<int:app_id>')
+@app.route('/api/admin/view-resume/<int:app_id>')
 @token_required
 def view_resume_by_app_id(app_id):
     """View resume by application ID"""
@@ -595,7 +595,7 @@ def view_resume_by_app_id(app_id):
 
 # ============ PROTECTED ADMIN ROUTES - INTERVIEWS ============
 
-@app.route("/admin/interviews", methods=["POST"])
+@app.route("/api/admin/interviews", methods=["POST"])
 @token_required
 def schedule_interview():
     """Schedule a new interview"""
@@ -638,7 +638,7 @@ def schedule_interview():
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/admin/interviews", methods=["GET"])
+@app.route("/api/admin/interviews", methods=["GET"])
 @token_required
 def get_interviews():
     """Get all interviews"""
@@ -649,7 +649,7 @@ def get_interviews():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/admin/interviews/<int:interview_id>", methods=["PUT"])
+@app.route("/api/admin/interviews/<int:interview_id>", methods=["PUT"])
 @token_required
 def update_interview_status(interview_id):
     """Update interview status (Completed/Cancelled)"""
@@ -667,7 +667,7 @@ def update_interview_status(interview_id):
 
 # ============ PROTECTED ADMIN ROUTES - JOBS ============
 
-@app.route("/admin/jobs", methods=["GET"])
+@app.route("/api/admin/jobs", methods=["GET"])
 @token_required
 def admin_get_jobs():
     """Admin route - Get all jobs (including inactive)"""
@@ -679,7 +679,7 @@ def admin_get_jobs():
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/admin/jobs", methods=["POST"])
+@app.route("/api/admin/jobs", methods=["POST"])
 @token_required
 def create_job():
     """Create a new job posting"""
@@ -729,7 +729,7 @@ def create_job():
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/admin/jobs/<int:job_id>", methods=["PUT"])
+@app.route("/api/admin/jobs/<int:job_id>", methods=["PUT"])
 @token_required
 def update_job(job_id):
     """Update an existing job"""
@@ -766,7 +766,7 @@ def update_job(job_id):
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/admin/jobs/<int:job_id>", methods=["DELETE"])
+@app.route("/api/admin/jobs/<int:job_id>", methods=["DELETE"])
 @token_required
 def delete_job(job_id):
     """Delete a job posting"""
@@ -782,7 +782,7 @@ def delete_job(job_id):
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/admin/jobs/<int:job_id>/toggle-status", methods=["PUT"])
+@app.route("/api/admin/jobs/<int:job_id>/toggle-status", methods=["PUT"])
 @token_required
 def toggle_job_status(job_id):
     """Toggle job status between Active and Inactive"""
