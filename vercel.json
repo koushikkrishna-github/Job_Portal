@@ -8,7 +8,9 @@
         {
             "src": "frontend/package.json",
             "use": "@vercel/static-build",
-            "config": { "distDir": "dist" }
+            "config": {
+                "distDir": "dist"
+            }
         }
     ],
     "routes": [
@@ -17,8 +19,12 @@
             "dest": "/Backend/app.py"
         },
         {
-            "src": "/(.*)",
+            "src": "/(assets/.*|.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|json|woff|woff2|ttf|map))",
             "dest": "/frontend/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/frontend/index.html"
         }
     ]
 }
