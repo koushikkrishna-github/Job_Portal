@@ -5,20 +5,21 @@ from bson import ObjectId
 from datetime import datetime, timedelta
 import os
 from io import BytesIO
-import pandas as pd
-from openpyxl import load_workbook
-from openpyxl.styles import Font, PatternFill, Alignment
+# Imports moved to function to optimize startup
+# from openpyxl.styles import Font, PatternFill, Alignment
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
 import jwt
 from functools import wraps
-import gridfs  # GridFS for storing files in MongoDB
+import gridfs
+from pymongo.errors import ServerSelectionTimeoutError, OperationFailure
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+# Enable CORS for all routes, allowing all origins, methods, and headers
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # MongoDB Configuration with auto URL encoding
 MONGO_USER = os.getenv("MONGO_USER", "JobPortal")
@@ -30,23 +31,32 @@ ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
 
-# Auto-encode credentials
-username = quote_plus(MONGO_USER)
-password = quote_plus(MONGO_PASSWORD)
+# Lazy DB Connection
+def get_db():
+    try:
+        MONGO_USER = os.getenv("MONGO_USER", "JobPortal")
+        MONGO_PASSWORD = os.getenv("MONGO_PASSWORD", "")
+        # Handle empty password specifically to avoid invalid URI
+        if not MONGO_PASSWORD: 
+             # Fallback or error - For now let it try, it might be localhost with no auth
+             pass 
 
-# Build connection string
-MONGO_URI = f"mongodb+srv://{username}:{password}@{MONGO_CLUSTER}/job_portal?retryWrites=true&w=majority"
-
-client = MongoClient(MONGO_URI)
-db = client['job_portal']
-applications_collection = db['applications']
-jobs_collection = db['jobs']
-interviews_collection = db['interviews']
-
-# GridFS for storing resume files
-fs = gridfs.GridFS(db)
+        username = quote_plus(MONGO_USER)
+        password = quote_plus(MONGO_PASSWORD)
+        
+        # Check if running in Vercel - DB Connection
+        # Use lazy connection
+        connection_string = f"mongodb+srv://{username}:{password}@{MONGO_CLUSTER}/job_portal?retryWrites=true&w=majority"
+        
+        client = MongoClient(connection_string, serverSelectionTimeoutMS=5000) # 5s timeout
+        return client['job_portal']
+    except Exception as e:
+        print(f"DB Connection Error: {e}")
+        raise e
 
 app.config['SECRET_KEY'] = SECRET_KEY
+
+
 
 # JWT Token decorator
 def token_required(f):
@@ -87,9 +97,13 @@ def serialize_doc(doc):
 @app.route("/api/health", methods=["GET"])
 def health():
     try:
-        client.server_info()
-        app_count = applications_collection.count_documents({})
-        job_count = jobs_collection.count_documents({})
+
+        db = get_db()
+        # Ping the database
+        db.command('ping')
+        
+        app_count = db['applications'].count_documents({})
+        job_count = db['jobs'].count_documents({})
         resume_count = db.fs.files.count_documents({})
         
         return jsonify({
@@ -101,10 +115,22 @@ def health():
             "jobs_count": job_count,
             "resumes_stored": resume_count
         }), 200
+    except ServerSelectionTimeoutError as e:
+        return jsonify({
+            "status": "error",
+            "message": "Database connection timeout. Check network access/IP whitelist.",
+            "error": str(e)
+        }), 503
+    except OperationFailure as e:
+        return jsonify({
+            "status": "error",
+            "message": "Database authentication failed. Check credentials.",
+            "error": str(e)
+        }), 401
     except Exception as e:
         return jsonify({
             "status": "error",
-            "message": "Database connection failed",
+            "message": "Internal Server Error",
             "error": str(e)
         }), 500
 
@@ -131,6 +157,10 @@ def apply_job():
         original_filename = resume.filename
         stored_filename = f"{timestamp}_{original_filename}"
 
+        # GridFS for storing resume files
+        db = get_db()
+        fs = gridfs.GridFS(db)
+
         # Store file in GridFS
         file_id = fs.put(
             resume_content,
@@ -145,7 +175,7 @@ def apply_job():
         )
 
         # Get next ID (sequential)
-        last_app = applications_collection.find_one(sort=[("ID", DESCENDING)])
+        last_app = db['applications'].find_one(sort=[("ID", DESCENDING)])
         next_id = (last_app['ID'] + 1) if last_app and 'ID' in last_app else 1
 
         # Create application document
@@ -169,14 +199,16 @@ def apply_job():
         }
 
         # Insert into MongoDB
-        result = applications_collection.insert_one(application)
+        result = db['applications'].insert_one(application)
         
-        # Increment applicant count in the specific job document
-        # We match by Position name as it's the most reliable link in current data structure
-        jobs_collection.update_one(
-            {"title": form.get("position"), "status": "Active"},
-            {"$inc": {"applicants": 1}}
-        )
+        # Increment applicant count (Fail-safe: don't block submission if this fails)
+        try:
+            db['jobs'].update_one(
+                {"title": form.get("position"), "status": "Active"},
+                {"$inc": {"applicants": 1}}
+            )
+        except Exception as e:
+            print(f"[WARNING] Failed to update applicant count: {e}")
         
         print(f"[SUCCESS] Application submitted - ID: {next_id}, Resume stored in GridFS: {file_id}")
         
@@ -202,6 +234,9 @@ def get_jobs():
         job_type = request.args.get('type')
         experience = request.args.get('experience')
         
+        db = get_db()
+        jobs_collection = db['jobs']
+
         if job_type and job_type != 'all':
             query['type'] = job_type
         
@@ -215,13 +250,17 @@ def get_jobs():
         
     except Exception as e:
         print(f"Error fetching jobs: {str(e)}")
+        # Check for specific DB errors
+        if "Authentication failed" in str(e):
+             return jsonify({"error": "Database Authentication Failed. Check MONGO_PASSWORD."}), 500
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/jobs/<int:job_id>", methods=["GET"])
 def get_job_by_id(job_id):
     """Public route - Get single job details"""
     try:
-        job = jobs_collection.find_one({"id": job_id, "status": "Active"})
+        db = get_db()
+        job = db['jobs'].find_one({"id": job_id, "status": "Active"})
         
         if not job:
             return jsonify({"error": "Job not found"}), 404
@@ -282,7 +321,10 @@ def get_applications():
         if status and status != 'all':
             query['Status'] = status
         
-        applications = list(applications_collection.find(query).sort("ID", DESCENDING))
+
+        
+        db = get_db()
+        applications = list(db['applications'].find(query).sort("ID", DESCENDING))
         applications = [serialize_doc(app) for app in applications]
         
         return jsonify(applications), 200
@@ -295,20 +337,22 @@ def get_applications():
 @token_required
 def get_statistics():
     try:
-        total = applications_collection.count_documents({})
+
+        db = get_db()
+        total = db['applications'].count_documents({})
         
         position_pipeline = [
             {"$group": {"_id": "$Position", "count": {"$sum": 1}}},
             {"$sort": {"count": -1}}
         ]
         by_position = {item['_id']: item['count'] 
-                      for item in applications_collection.aggregate(position_pipeline)}
+                      for item in db['applications'].aggregate(position_pipeline)}
         
         status_pipeline = [
             {"$group": {"_id": "$Status", "count": {"$sum": 1}}}
         ]
         by_status_result = {item['_id']: item['count'] 
-                           for item in applications_collection.aggregate(status_pipeline)}
+                           for item in db['applications'].aggregate(status_pipeline)}
         
         by_status = {
             "Pending": by_status_result.get("Pending", 0),
@@ -318,16 +362,16 @@ def get_statistics():
             "Rejected": by_status_result.get("Rejected", 0)
         }
         
-        recent = list(applications_collection.find()
+        recent = list(db['applications'].find()
                      .sort("Created At", DESCENDING)
                      .limit(5))
         recent = [serialize_doc(app) for app in recent]
         
-        jobs_count = jobs_collection.count_documents({"status": "Active"})
+        jobs_count = db['jobs'].count_documents({"status": "Active"})
         
-        interviews_count = interviews_collection.count_documents({})
-        interviews_scheduled = interviews_collection.count_documents({"status": "Scheduled"})
-        interviews_completed = interviews_collection.count_documents({"status": "Completed"})
+        interviews_count = db['interviews'].count_documents({})
+        interviews_scheduled = db['interviews'].count_documents({"status": "Scheduled"})
+        interviews_completed = db['interviews'].count_documents({"status": "Completed"})
 
         stats = {
             "total": total,
@@ -355,7 +399,10 @@ def update_status(app_id):
         if new_status not in ['Pending', 'Reviewed', 'Shortlisted', 'Rejected']:
             return jsonify({"error": "Invalid status"}), 400
         
-        result = applications_collection.update_one(
+
+        
+        db = get_db()
+        result = db['applications'].update_one(
             {"ID": app_id},
             {"$set": {
                 "Status": new_status,
@@ -376,12 +423,15 @@ def update_status(app_id):
 @token_required
 def delete_application(app_id):
     try:
-        application = applications_collection.find_one({"ID": app_id})
+
+        db = get_db()
+        application = db['applications'].find_one({"ID": app_id})
         
         if not application:
             return jsonify({"error": "Application not found"}), 404
         
         # Delete resume from GridFS
+        fs = gridfs.GridFS(db)
         resume_file_id = application.get('Resume File ID')
         if resume_file_id:
             try:
@@ -391,7 +441,7 @@ def delete_application(app_id):
                 print(f"[WARNING] Could not delete resume from GridFS: {e}")
         
         # Delete application document
-        applications_collection.delete_one({"ID": app_id})
+        db['applications'].delete_one({"ID": app_id})
         
         return jsonify({"message": "Application deleted successfully"}), 200
     
@@ -403,13 +453,18 @@ def delete_application(app_id):
 @token_required
 def admin_download_excel():
     try:
+        import pandas as pd
+        from openpyxl import load_workbook
+        from openpyxl.styles import Font, PatternFill, Alignment
+
         query = {}
         position = request.args.get('position')
         
         if position and position != 'all':
             query['Position'] = position
         
-        applications = list(applications_collection.find(query).sort("ID", DESCENDING))
+        db = get_db()
+        applications = list(db['applications'].find(query).sort("ID", DESCENDING))
         
         if not applications:
             return jsonify({"error": "No data available"}), 404
@@ -498,6 +553,8 @@ def serve_resume(filename):
             return jsonify({'error': 'Invalid filename'}), 400
         
         # Find file in GridFS by filename
+        db = get_db()
+        fs = gridfs.GridFS(db)
         grid_file = fs.find_one({"filename": filename})
         
         if not grid_file:
@@ -529,6 +586,8 @@ def download_resume(filename):
             return jsonify({'error': 'Invalid filename'}), 400
         
         # Find file in GridFS by filename
+        db = get_db()
+        fs = gridfs.GridFS(db)
         grid_file = fs.find_one({"filename": filename})
         
         if not grid_file:
@@ -560,8 +619,10 @@ def download_resume(filename):
 def view_resume_by_app_id(app_id):
     """View resume by application ID"""
     try:
+
         # Find application
-        application = applications_collection.find_one({"ID": app_id})
+        db = get_db()
+        application = db['applications'].find_one({"ID": app_id})
         
         if not application:
             return jsonify({'error': 'Application not found in database'}), 404
@@ -573,6 +634,7 @@ def view_resume_by_app_id(app_id):
         
         # Get file from GridFS
         try:
+            fs = gridfs.GridFS(db)
             grid_file = fs.get(ObjectId(resume_file_id))
         except:
             return jsonify({'error': 'Resume file not found in storage'}), 404
@@ -609,7 +671,8 @@ def schedule_interview():
                 return jsonify({"error": f"{field} is required"}), 400
         
         # Get next ID
-        last = interviews_collection.find_one(sort=[("id", DESCENDING)])
+        db = get_db()
+        last = db['interviews'].find_one(sort=[("id", DESCENDING)])
         next_id = (last['id'] + 1) if last and 'id' in last else 1
         
         interview = {
@@ -625,7 +688,7 @@ def schedule_interview():
             "created_at": datetime.now()
         }
         
-        interviews_collection.insert_one(interview)
+        db['interviews'].insert_one(interview)
         
         # Simulate Email Sending
         print(f"[EMAIL MOCK] To: {data.get('candidate_email')}")
@@ -643,7 +706,9 @@ def schedule_interview():
 def get_interviews():
     """Get all interviews"""
     try:
-        interviews = list(interviews_collection.find().sort("date_time", 1))
+
+        db = get_db()
+        interviews = list(db['interviews'].find().sort("date_time", 1))
         interviews = [serialize_doc(i) for i in interviews]
         return jsonify(interviews), 200
     except Exception as e:
@@ -657,7 +722,10 @@ def update_interview_status(interview_id):
         data = request.json
         status = data.get("status")
         
-        interviews_collection.update_one(
+        status = data.get("status")
+        
+        db = get_db()
+        db['interviews'].update_one(
             {"id": interview_id},
             {"$set": {"status": status}}
         )
@@ -672,7 +740,9 @@ def update_interview_status(interview_id):
 def admin_get_jobs():
     """Admin route - Get all jobs (including inactive)"""
     try:
-        jobs = list(jobs_collection.find().sort("created_at", DESCENDING))
+
+        db = get_db()
+        jobs = list(db['jobs'].find().sort("created_at", DESCENDING))
         jobs = [serialize_doc(job) for job in jobs]
         return jsonify(jobs), 200
     except Exception as e:
@@ -692,8 +762,10 @@ def create_job():
             if not data.get(field):
                 return jsonify({"error": f"{field} is required"}), 400
         
+        
         # Get next ID
-        last_job = jobs_collection.find_one(sort=[("id", DESCENDING)])
+        db = get_db()
+        last_job = db['jobs'].find_one(sort=[("id", DESCENDING)])
         next_id = (last_job['id'] + 1) if last_job and 'id' in last_job else 1
         
         # Create job document
@@ -717,7 +789,7 @@ def create_job():
             "updated_at": datetime.now()
         }
         
-        result = jobs_collection.insert_one(job)
+        result = db['jobs'].insert_one(job) # Use db directly
         
         return jsonify({
             "message": "Job created successfully",
@@ -752,7 +824,10 @@ def update_job(job_id):
             "updated_at": datetime.now()
         }
         
-        result = jobs_collection.update_one(
+
+        
+        db = get_db()
+        result = db['jobs'].update_one(
             {"id": job_id},
             {"$set": update_data}
         )
@@ -771,7 +846,8 @@ def update_job(job_id):
 def delete_job(job_id):
     """Delete a job posting"""
     try:
-        result = jobs_collection.delete_one({"id": job_id})
+        db = get_db()
+        result = db['jobs'].delete_one({"id": job_id})
         
         if result.deleted_count == 0:
             return jsonify({"error": "Job not found"}), 404
@@ -787,14 +863,15 @@ def delete_job(job_id):
 def toggle_job_status(job_id):
     """Toggle job status between Active and Inactive"""
     try:
-        job = jobs_collection.find_one({"id": job_id})
+        db = get_db()
+        job = db['jobs'].find_one({"id": job_id})
         
         if not job:
             return jsonify({"error": "Job not found"}), 404
         
         new_status = "Inactive" if job.get("status") == "Active" else "Active"
         
-        jobs_collection.update_one(
+        db['jobs'].update_one(
             {"id": job_id},
             {"$set": {"status": new_status, "updated_at": datetime.now()}}
         )
@@ -810,6 +887,10 @@ def toggle_job_status(job_id):
 def create_indexes():
     """Create MongoDB indexes for optimized queries"""
     try:
+        db = get_db()
+        applications_collection = db['applications']
+        jobs_collection = db['jobs']
+
         # Applications indexes
         applications_collection.create_index("ID", unique=True)
         applications_collection.create_index("Email")
@@ -837,6 +918,10 @@ def migrate_local_to_gridfs():
     Call this once after deployment to migrate old resumes
     """
     try:
+        db = get_db()
+        applications_collection = db['applications']
+        fs = gridfs.GridFS(db)
+        
         migrated = 0
         failed = 0
         
@@ -904,15 +989,22 @@ if __name__ == "__main__":
     print(f"\n[*] Connecting to MongoDB...")
     
     try:
+        # Initialize DB connection
+        db = get_db()
+        client = db.client
+        
+        # Test connection
         client.server_info()
         print("[OK] MongoDB connection successful!")
+        
         print(f"[DB] Database: job_portal")
         print(f"[DB] Collections: applications, jobs")
         print(f"[STORAGE] Using GridFS for resume files")
         print(f"[ADMIN] Admin Username: {ADMIN_USERNAME}")
         
-        # Check existing resumes in GridFS
-        resume_count = db.fs.files.count_documents({})
+        # Check existing resumes in GridFS (Robustly)
+        fs_files = db['fs.files']
+        resume_count = fs_files.count_documents({})
         print(f"[GRIDFS] Resumes stored: {resume_count}")
         
         create_indexes()

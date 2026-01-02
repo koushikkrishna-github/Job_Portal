@@ -20,7 +20,7 @@ function JobCard({ job, onApply, onShare, index }) {
         <div className="flex-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            Strategic Role
+            Featured Role
           </div>
           <h3 className="text-xl md:text-2xl font-black text-gray-900 group-hover:text-indigo-600 transition-colors leading-tight tracking-tight">
             {job.title}
@@ -97,7 +97,7 @@ function JobDetails({ job, onBack, onApplyNow, onShare }) {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 pb-12 border-b border-gray-50">
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-[0.3em]">
-                  Active Engagement
+                  Actively Hiring
                 </div>
                 <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-[1.0]">{job.title}</h1>
                 <p className="text-lg text-indigo-500 font-bold uppercase tracking-[0.3em]">{job.company}</p>
@@ -133,7 +133,7 @@ function JobDetails({ job, onBack, onApplyNow, onShare }) {
                 <div className="max-w-4xl">
                   <h2 className="text-xl font-black text-gray-900 mb-8 tracking-tight flex items-center gap-3">
                     <div className="w-2 h-6 bg-emerald-500 rounded-full" />
-                    Strategic Responsibilities
+                    Key Responsibilities
                   </h2>
                   <div className="grid gap-4">
                     {job.responsibilities.map((resp, idx) => (
@@ -156,7 +156,7 @@ function JobDetails({ job, onBack, onApplyNow, onShare }) {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600 rounded-full blur-3xl" />
               </div>
 
-              <h3 className="text-[10px] font-bold mb-8 border-b border-white/10 pb-6 uppercase tracking-[0.3em] text-indigo-400">Position Integrity</h3>
+              <h3 className="text-[10px] font-bold mb-8 border-b border-white/10 pb-6 uppercase tracking-[0.3em] text-indigo-400">Job Overview</h3>
 
               <div className="space-y-8">
                 <div className="flex items-center gap-4">
@@ -173,7 +173,7 @@ function JobDetails({ job, onBack, onApplyNow, onShare }) {
                     <DollarSign className="text-emerald-400 w-6 h-6 group-hover:text-white" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-indigo-100/40 font-bold uppercase tracking-[0.3em] mb-1">Fiscal Package</p>
+                    <p className="text-[10px] text-indigo-100/40 font-bold uppercase tracking-[0.3em] mb-1">Salary</p>
                     <p className="text-lg font-bold tracking-tight">{job.salary}</p>
                   </div>
                 </div>
@@ -182,7 +182,7 @@ function JobDetails({ job, onBack, onApplyNow, onShare }) {
                     <Target className="text-indigo-400 w-6 h-6 group-hover:text-white" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-indigo-100/40 font-bold uppercase tracking-[0.3em] mb-1">Experience Index</p>
+                    <p className="text-[10px] text-indigo-100/40 font-bold uppercase tracking-[0.3em] mb-1">Experience</p>
                     <p className="text-lg font-bold tracking-tight">{job.experience}</p>
                   </div>
                 </div>
@@ -192,17 +192,17 @@ function JobDetails({ job, onBack, onApplyNow, onShare }) {
                 onClick={onApplyNow}
                 className="w-full mt-12 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold uppercase tracking-[0.2em] text-xs shadow-xl transition-all hover:-translate-y-1 active:scale-[0.98]"
               >
-                Initiate Application
+                Apply Now
               </button>
             </div>
 
             <div className="bg-gray-50 border border-gray-100 rounded-[2rem] p-8 hover:shadow-lg transition-all">
               <div className="flex items-center gap-3 text-gray-400 font-bold uppercase tracking-[0.3em] text-[10px] mb-4">
                 <Users className="w-4 h-4 text-indigo-600" />
-                Community Insight
+                Applicant Info
               </div>
               <p className="text-gray-500 text-base leading-relaxed font-medium">
-                Join <span className="text-indigo-600 font-black">{job.applicants || 42} leading candidates</span> currently vying for this strategic role.
+                Join <span className="text-indigo-600 font-black">{job.applicants || 42} candidates</span> who have applied for this role.
               </p>
             </div>
           </div>
@@ -214,13 +214,14 @@ function JobDetails({ job, onBack, onApplyNow, onShare }) {
 
 // Main CareerPortal Component
 export default function CareerPortal() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedJob, setSelectedJob] = useState(null);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [filters, setFilters] = useState({ type: "All Types", experience: "All Levels" });
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
 
@@ -246,6 +247,7 @@ export default function CareerPortal() {
       setJobs(data);
     } catch (err) {
       console.error("Failed to load jobs:", err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -320,7 +322,7 @@ export default function CareerPortal() {
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] animate-fadeIn">
           <div className="bg-[#0f172a] text-white px-8 py-4 rounded-xl shadow-2xl flex items-center gap-4 border border-indigo-500/30">
             <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-            <span className="font-bold text-sm tracking-tight uppercase">Application Transmitted</span>
+            <span className="font-bold text-sm tracking-tight uppercase">Application Sent</span>
           </div>
         </div>
       )}
@@ -344,13 +346,13 @@ export default function CareerPortal() {
 
         <div className="max-w-[1440px] mx-auto relative z-10 space-y-8">
           <div className="inline-flex items-center gap-3 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[10px] font-bold uppercase tracking-[0.3em] text-indigo-400 backdrop-blur-xl animate-fadeIn">
-            Strategic Ecosystem
+            Career Hub
           </div>
           <h1 className="text-4xl md:text-7xl font-black tracking-tighter leading-[1.0] uppercase animate-fadeInDown">
-            Your Next <br className="hidden lg:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">Great Ascent.</span>
+            Find Your <br className="hidden lg:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">Dream Job.</span>
           </h1>
           <p className="text-lg md:text-xl text-indigo-100/70 max-w-3xl mx-auto font-medium animate-fadeInUp">
-            Discover technical opportunities at South India's most innovative technology companies. Bridge the gap between talent and global impact.
+            Discover opportunities at top technology companies. Connect with the best roles in the industry.
           </p>
 
           <div className="max-w-2xl mx-auto mt-12 relative px-4 group">
@@ -376,8 +378,8 @@ export default function CareerPortal() {
               <Filter className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-1">Catalog Filters</p>
-              <p className="font-black text-gray-900 uppercase text-2xl tracking-tight">Refine Pulse</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-1">Filters</p>
+              <p className="font-black text-gray-900 uppercase text-2xl tracking-tight">Filter Jobs</p>
             </div>
           </div>
 
@@ -416,7 +418,22 @@ export default function CareerPortal() {
         </div>
 
         {/* Dynamic Grid */}
-        {filteredJobs.length > 0 ? (
+        {jobs.length === 0 ? (
+          <div className="text-center py-24 md:py-32 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-100 px-6">
+            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg mx-auto mb-8">
+              <Shield className="w-10 h-10 text-red-400" />
+            </div>
+            <h3 className="text-3xl md:text-5xl font-black text-gray-900 mb-4 uppercase tracking-tight">Connection Error.</h3>
+            <p className="text-lg text-red-500 font-bold mb-2 uppercase tracking-widest">{error || "Unknown Error"}</p>
+            <p className="text-lg text-gray-400 mb-10 max-w-xl mx-auto">Unable to load jobs. Please try refreshing.</p>
+            <button
+              onClick={fetchJobs}
+              className="px-8 py-4 bg-gray-900 text-white rounded-xl font-bold uppercase tracking-[0.2em] text-[10px] shadow-xl hover:bg-indigo-600 transition-all hover:-translate-y-1 flex items-center gap-2 mx-auto"
+            >
+              <RefreshCw className="w-4 h-4" /> Refresh
+            </button>
+          </div>
+        ) : filteredJobs.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
             {filteredJobs.map((job, index) => (
               <JobCard
@@ -433,13 +450,17 @@ export default function CareerPortal() {
             <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg mx-auto mb-8">
               <Search className="w-10 h-10 text-gray-200" />
             </div>
-            <h3 className="text-3xl md:text-5xl font-black text-gray-900 mb-4 uppercase tracking-tight">Zero Matches.</h3>
-            <p className="text-lg text-gray-400 mb-10 max-w-xl mx-auto">Our strategic hub is currently mapping new opportunities. Broaden your filters to capture the next wave.</p>
+            <h3 className="text-3xl md:text-5xl font-black text-gray-900 mb-4 uppercase tracking-tight">No Jobs Found.</h3>
+            <p className="text-lg text-gray-400 mb-10 max-w-xl mx-auto">We couldn't find any jobs matching your search. Try adjusting your filters.</p>
             <button
-              onClick={() => { setSearchTerm(""); setFilters({ type: "All Types", experience: "All Levels" }) }}
+              onClick={() => {
+                setSearchTerm("");
+                setFilters({ type: "All Types", experience: "All Levels" });
+                setSearchParams({});
+              }}
               className="px-8 py-4 bg-gray-900 text-white rounded-xl font-bold uppercase tracking-[0.2em] text-[10px] shadow-xl hover:bg-indigo-600 transition-all hover:-translate-y-1"
             >
-              Reset Search Protocol
+              Reset Search
             </button>
           </div>
         )}

@@ -63,6 +63,7 @@ export default function ApplicationForm({ job, onBack, onSuccess }) {
         <div className="bg-white border border-gray-100 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden transition-all duration-500 animate-in fade-in zoom-in-95">
             <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-8">
                 <div className="space-y-4">
+                    <img src="/logo.png" alt="HexaJobs" className="w-12 h-12 object-contain mb-2" />
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-widest">
                         Official Application
                     </div>
@@ -248,10 +249,10 @@ export default function ApplicationForm({ job, onBack, onSuccess }) {
                             )}
                         </label>
                     </div>
-                </div>
+                </div >
 
                 {/* Actions */}
-                <div className="pt-10 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-6">
+                < div className="pt-10 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-6" >
                     <button
                         type="button"
                         onClick={onBack}
@@ -275,9 +276,9 @@ export default function ApplicationForm({ job, onBack, onSuccess }) {
                             )}
                         </button>
                     </div>
-                </div>
-            </form>
-        </div>
+                </div >
+            </form >
+        </div >
     );
 }
 

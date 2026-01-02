@@ -25,6 +25,8 @@ export default function Home() {
 
                 <div className="max-w-[1440px] mx-auto px-6 relative z-10">
                     <div className="flex flex-col items-center text-center space-y-8 animate-fadeIn">
+
+
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full">
                             <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
                             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-400">Strategic Talent Acquisition</span>
@@ -87,7 +89,7 @@ export default function Home() {
                     <div className="text-center max-w-3xl mx-auto mb-16">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100/50 rounded-full mb-4">
                             <Shield className="w-3 h-3 text-emerald-600" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">The Nexus Protocol</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">The HexaCode Protocol</span>
                         </div>
                         <h2 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter mb-6">Built on <span className="text-indigo-600">Uncompromising Trust.</span></h2>
                         <p className="text-gray-500 font-medium leading-relaxed">
@@ -99,7 +101,7 @@ export default function Home() {
                         {[
                             { title: "Verified Enterprises", desc: "Every company is subjected to a rigorous 14-point corporate audit before accessing our talent pool.", icon: Building2 },
                             { title: "Vetted Professionals", desc: "Candidates undergo algorithmic and manual screening to validate skills and experience authenticity.", icon: Briefcase },
-                            { title: "Assured Recruitment", desc: "Our 'Placement Guarantee' ensures all offers made through Nexus are legally binding and secure.", icon: Shield },
+                            { title: "Assured Recruitment", desc: "Our 'Placement Guarantee' ensures all offers made through HexaJobs are legally binding and secure.", icon: Shield },
                         ].map((item, i) => (
                             <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                                 <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition-colors">
@@ -121,7 +123,7 @@ export default function Home() {
                         <div className="max-w-xl space-y-6">
                             <h2 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">The Unified <span className="text-indigo-600">Grid.</span></h2>
                             <p className="text-lg text-gray-500 font-medium leading-relaxed">
-                                Nexus isn't just a portal; it's a synchronized grid connecting the four pillars of recruitment.
+                                HexaJobs isn't just a portal; it's a synchronized grid connecting the four pillars of recruitment.
                             </p>
                             <ul className="space-y-4 pt-4">
                                 {[

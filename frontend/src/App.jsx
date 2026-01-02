@@ -11,6 +11,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 import { isAuthenticated } from './api';
 import { useState, useEffect } from 'react';
+import ScrollToTop from './components/ScrollToTop';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -26,6 +27,7 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Public Website Routes (Wrapped in Main Layout) */}
         <Route path="/" element={<Layout><Home /></Layout>} />

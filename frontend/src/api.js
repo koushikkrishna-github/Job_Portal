@@ -36,17 +36,24 @@ export const logout = () => {
 
 // Submit job application (PUBLIC - No token needed)
 export const applyJob = async (formData) => {
-  const response = await fetch(`${API_URL}/apply`, {
-    method: "POST",
-    body: formData,
-  });
+  console.log(`[API] Submitting application to: ${API_URL}/apply`);
+  try {
+    const response = await fetch(`${API_URL}/apply`, {
+      method: "POST",
+      body: formData,
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Application failed");
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("[API] Server Error:", error);
+      throw new Error(error.error || "Application failed");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("[API] Network/Fetch Error:", error);
+    throw error;
   }
-
-  return response.json();
 };
 
 // Get all applications (PROTECTED - Requires token)
@@ -296,7 +303,8 @@ export const getJobs = async (filters = {}) => {
   const response = await fetch(`${API_URL}/jobs?${params}`);
 
   if (!response.ok) {
-    throw new Error("Failed to fetch jobs");
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || errorData.error || "Failed to fetch jobs");
   }
 
   return response.json();
@@ -307,7 +315,8 @@ export const getJobById = async (jobId) => {
   const response = await fetch(`${API_URL}/jobs/${jobId}`);
 
   if (!response.ok) {
-    throw new Error("Failed to fetch job details");
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || errorData.error || "Failed to fetch job details");
   }
 
   return response.json();
@@ -383,7 +392,7 @@ export const deleteJob = async (jobId) => {
 // Toggle job status (Active/Inactive) (PROTECTED - Requires token)
 export const toggleJobStatus = async (jobId) => {
   const response = await fetch(`${API_URL}/admin/jobs/${jobId}/toggle-status`, {
-    method: "PATCH",
+    method: "PUT",
     headers: {
       "Authorization": `Bearer ${getToken()}`,
     },

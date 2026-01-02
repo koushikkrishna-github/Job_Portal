@@ -59,11 +59,11 @@ export default function Layout({ children }) {
                         }`}>
                         {/* Logo */}
                         <Link to="/" className="flex items-center gap-3 md:gap-4 group relative z-10">
-                            <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500 relative overflow-hidden">
-                                <Building2 className="w-5 h-5 md:w-6 md:h-6 text-white relative z-10" />
+                            <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 relative overflow-hidden rounded-full">
+                                <img src="/logo-transparent.png" alt="HexaJobs" className="w-full h-full object-contain" />
                             </div>
                             <div className="flex flex-col">
-                                <span className={`text-xl md:text-2xl font-bold leading-none tracking-tight transition-all duration-500 ${scrolled ? 'text-[#0f172a]' : 'text-white'}`} style={!scrolled ? { textShadow: '0 2px 10px rgba(0,0,0,0.3)' } : {}}>NEXUS</span>
+                                <span className={`text-xl md:text-2xl font-bold leading-none tracking-tight transition-all duration-500 ${scrolled ? 'text-[#0f172a]' : 'text-white'}`} style={!scrolled ? { textShadow: '0 2px 10px rgba(0,0,0,0.3)' } : {}}>HEXAJOBS</span>
                                 <div className="flex items-center gap-2 mt-1">
                                     <span className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-500 ${scrolled ? 'text-indigo-600' : 'text-indigo-400'}`} style={!scrolled ? { textShadow: '0 2px 10px rgba(0,0,0,0.3)' } : {}}>Solutions</span>
                                     <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/20 backdrop-blur-md rounded border border-emerald-500/30">
@@ -155,11 +155,11 @@ export default function Layout({ children }) {
                         {/* Brand Cluster */}
                         <div className="lg:col-span-4 space-y-6">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white backdrop-blur-xl">
-                                    <Building2 className="w-6 h-6 text-emerald-400" />
+                                <div className="w-12 h-12 flex items-center justify-center text-white backdrop-blur-xl rounded-full overflow-hidden">
+                                    <img src="/logo-transparent.png" alt="HexaJobs" className="w-full h-full object-contain" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-xl font-bold tracking-tight">NEXUS</span>
+                                    <span className="text-xl font-bold tracking-tight">HEXAJOBS</span>
                                     <span className="text-[10px] text-emerald-400 font-bold tracking-[0.3em] uppercase">Staffing Solutions</span>
                                 </div>
                             </div>

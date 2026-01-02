@@ -119,9 +119,12 @@ export default function Contact() {
                                 ) : (
                                     <>
                                         <div className="max-w-2xl mb-10">
-                                            <h3 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter mb-4 uppercase">Drop a <span className="text-indigo-600">Signal.</span></h3>
-                                            <p className="text-lg text-gray-400 leading-relaxed font-medium">Provide your architectural requirements below. Our consultants response within 12 standard business hours.</p>
-                                        </div>
+                                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter mb-4">
+                                                Contact <span className="text-indigo-600">HexaJobs.</span>
+                                            </h1>
+                                            <p className="text-lg text-gray-500 font-medium">
+                                                Have questions about our verification protocol or enterprise partnerships? Our success team is ready to assist.
+                                            </p>                </div>
 
                                         <form onSubmit={handleSubmit} className="space-y-6">
                                             <div className="grid md:grid-cols-2 gap-6">

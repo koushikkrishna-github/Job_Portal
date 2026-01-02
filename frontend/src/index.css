@@ -56,6 +56,13 @@
   /* Central Gradients */
   --gradient-indigo-emerald: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-secondary-500) 100%);
   --gradient-dark-mesh: linear-gradient(180deg, var(--color-gray-900) 0%, #1e293b 100%);
+
+  /* Animation Variables */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --z-modal-backdrop: 100;
+  --z-tooltip: 1000;
 }
 
 body {

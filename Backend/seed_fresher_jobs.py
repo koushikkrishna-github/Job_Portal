@@ -45,6 +45,7 @@ def seed_jobs():
                 "location": "Hyderabad / Bangalore",
                 "type": "Full-time",
                 "experience": "Fresher (Batch 2025)",
+                "experienceLevel": "Fresher",
                 "salary": "₹7 LPA - ₹12 LPA",
                 "description": "Join our elite Graduate Engineering Program as a Java Full Stack Developer Trainee. This role is designed for 2025 graduates who aspire to build scalable, enterprise-grade applications. You will be part of a high-performance team working on mission-critical software systems, leveraging modern architectural patterns and best practices.",
                 "responsibilities": [
@@ -69,6 +70,7 @@ def seed_jobs():
                 "location": "Pune / Remote",
                 "type": "Full-time",
                 "experience": "Fresher (Batch 2025/2026)",
+                "experienceLevel": "Fresher",
                 "salary": "₹8 LPA + Benefits",
                 "description": "FinTech Prime is looking for Associate Java Developers to revolutionize our digital banking platform. You will focus on building decentralized, high-availability microservices that handle millions of transactions daily. This is a technical role requiring deep curiosity about how distributed systems scale and fail.",
                 "responsibilities": [
@@ -95,6 +97,7 @@ def seed_jobs():
                 "location": "Remote",
                 "type": "Internship",
                 "experience": "Pre-final Year (Batch 2026)",
+                "experienceLevel": "Fresher",
                 "salary": "₹40,000 / month",
                 "description": "Startup Nebula offers a high-impact internship for 2026 graduates. You won't just be 'helping' – you'll be building core features for our AI-driven productivity suite. This 6-month program is a direct path to a Full-Time Role (PPO) based on performance and culture fit.",
                 "responsibilities": [
@@ -119,6 +122,7 @@ def seed_jobs():
                 "location": "Bangalore",
                 "type": "Full-time",
                 "experience": "Fresher (Batch 2025)",
+                "experienceLevel": "Fresher",
                 "salary": "₹9 LPA - ₹13 LPA",
                 "description": "Join Fortress Digital as a Cyber Security Analyst Trainee and protect global enterprises from evolving threats. You will be trained in SOC operations, penetration testing, and security automation, eventually becoming part of our elite IR (Incident Response) team.",
                 "responsibilities": [
@@ -145,6 +149,7 @@ def seed_jobs():
                 "location": "Bangalore / Remote",
                 "type": "Full-time",
                 "experience": "Fresher (Batch 2025)",
+                "experienceLevel": "Fresher",
                 "salary": "₹12 LPA - ₹18 LPA",
                 "description": "At Nexus AI Labs, we are pushing the boundaries of what is possible with Generative AI. As a Trainee, you will work on fine-tuning Large Language Models (LLMs) for specific industry use cases. This is a research-heavy engineering role for those who love math and Python.",
                 "responsibilities": [
@@ -174,16 +179,17 @@ def seed_jobs():
                 "location": job_data["location"],
                 "type": job_data["type"],
                 "experience": job_data["experience"],
+                "experienceLevel": job_data.get("experienceLevel", "Fresher"),
                 "salary": job_data["salary"],
                 "postedDate": "Just now",
                 "applicants": 0,
                 "description": job_data["description"],
-                "responsibilities": [
+                "responsibilities": job_data.get("responsibilities", [
                     "Collaborate with cross-functional teams to define and ship new features.",
                     "Write clean, maintainable, and efficient code.",
                     "Participate in code reviews and contribute to knowledge sharing.",
                     "Stay updated with emerging trends and technologies in the industry."
-                ],
+                ]),
                 "requirements": job_data["requirements"],
                 "skills": job_data["skills"],
                 "benefits": ["Competitive Pay", "Professional Mentorship", "Learning Allowances", "Flexible Working"],

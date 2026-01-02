@@ -34,7 +34,7 @@ export default function About() {
                             <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] shadow-2xl">
                                 <img
                                     src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                                    alt="Nexus Strategy Lab"
+                                    alt="HexaJobs Strategy Lab"
                                     className="w-full h-full object-cover grayscale brightness-90 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a]/80 to-transparent opacity-60" />
@@ -57,10 +57,10 @@ export default function About() {
                         <div className="space-y-8">
                             <div className="space-y-4">
                                 <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight leading-[1.1]">
-                                    The Nexus <span className="text-indigo-600">Protocol.</span>
+                                    The HexaCode <span className="text-indigo-600">Protocol.</span>
                                 </h2>
                                 <p className="text-lg text-gray-500 leading-relaxed font-medium">
-                                    Founded in 2020, Nexus was architected to eliminate uncertainty in recruitment. We enforce a zero-tolerance policy for fraudulent listings and unverified candidates, creating the only secure ecosystem in the region.
+                                    Founded in 2020, HexaJobs was architected to eliminate uncertainty in recruitment. We enforce a zero-tolerance policy for fraudulent listings and unverified candidates, creating the only secure ecosystem in the region.
                                 </p>
                             </div>
 
@@ -94,7 +94,7 @@ export default function About() {
                 <div className="max-w-[1440px] mx-auto px-6 relative z-10">
                     <div className="max-w-3xl mb-16 md:mb-20">
                         <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight mb-6">Trust <span className="text-indigo-600">Architecture.</span></h2>
-                        <p className="text-lg text-gray-500 leading-relaxed font-medium">The three pillars that make Nexus the safest recruitment ecosystem in India.</p>
+                        <p className="text-lg text-gray-500 leading-relaxed font-medium">The three pillars that make HexaJobs the safest recruitment ecosystem in India.</p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8 md:gap-10">
